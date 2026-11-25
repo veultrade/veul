@@ -63,22 +63,42 @@ document.getElementById("connect").onclick = async () => {
   if (!window.ethereum) return log("No wallet found. Open this page in the browser that has Rabby.");
   [account] = await window.ethereum.request({ method: "eth_requestAccounts" });
   await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN }] });
-  const need = await missing();
-  document.getElementById("log").textContent = "Connected " + account + (account.toLowerCase() === OWNER ? " (owner)" : " (not the owner)") + "\nMissing USDG: " + Number(need) / 1e6;
-  document.getElementById("fund").disabled = need === 0n;
-  document.getElementById("post").disabled = account.toLowerCase() !== OWNER;
+  await refresh();
 };
+
+// Enables only the step that can succeed from this wallet: funding needs enough USDG here; posting needs the owner
+// and a fully funded contract (setRoot refuses an underfunded root).
+async function refresh() {
+  const need = await missing();
+  const mine = await call(USDG, "0x70a08231" + word(account));
+  const isOwner = account.toLowerCase() === OWNER;
+  const lines = ["Connected " + account + (isOwner ? " (owner)" : " (not the owner)"),
+    "This wallet holds " + Number(mine) / 1e6 + " USDG. The contract still needs " + Number(need) / 1e6 + " USDG."];
+  if (need > 0n) lines.push(mine < need ? "Step 1: switch to a wallet that holds USDG (this one does not have enough)." : "Step 1 is ready: send the USDG.");
+  else lines.push("Step 1 is done.", isOwner ? "Step 2 is ready: post the root." : "Step 2: switch to the owner wallet.");
+  document.getElementById("log").textContent = lines.join("\n");
+  document.getElementById("fund").disabled = need === 0n || mine < need;
+  document.getElementById("post").disabled = !isOwner || need > 0n;
+}
+
+// Rabby switches accounts without a reload; follow it.
+window.ethereum?.on?.("accountsChanged", async (accounts) => {
+  account = accounts[0];
+  if (account) await refresh();
+});
 
 document.getElementById("fund").onclick = async () => {
   const need = await missing();
   if (need === 0n) return log("Nothing missing.");
   log("Sending " + Number(need) / 1e6 + " USDG to the contract…");
-  if (await send(USDG, "0xa9059cbb" + word(CLAIMS) + hex(need))) document.getElementById("fund").disabled = true;
+  await send(USDG, "0xa9059cbb" + word(CLAIMS) + hex(need));
+  await refresh();
 };
 
 document.getElementById("post").onclick = async () => {
   log("Posting root…");
   if (await send(CLAIMS, "0xedbe2a21" + ROOT.slice(2) + hex(TOTAL))) log("Root posted. Claims for epoch 1 are open in the app.");
+  await refresh();
 };
 </script>
 </body></html>
