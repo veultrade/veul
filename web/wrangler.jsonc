@@ -23,6 +23,8 @@
   // Ledger of verified real swaps and paybacks (session 1.5). Schema in migrations/.
   "d1_databases": [{ "binding": "LEDGER", "database_name": "stockup-ledger", "database_id": "ac76767b-f09c-4d30-be4f-831b904eb6e8", "migrations_dir": "migrations" }],
   // Still on: the VPS market feed posts to the workers.dev address. Turn off once its FEED_URL is veul.trade.
+  // Public settings (not secrets). VeulClaims was deployed by the fee wallet on 2026-11-25 (session 1.6).
+  "vars": { "CLAIMS_ADDRESS": "0xDc19CA2F0110D129CB9cC7CBc990A7f614A5e53A" },
   "workers_dev": true,
   // No public URL per uploaded version.
   "preview_urls": false,
