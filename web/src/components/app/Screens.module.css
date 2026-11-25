@@ -91,6 +91,14 @@
   gap: 8px;
 }
 
+.claimDone {
+  color: var(--lav);
+}
+
+.claimDone a {
+  color: inherit;
+}
+
 .stocks {
   margin: 0;
   padding: 0;

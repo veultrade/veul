@@ -219,6 +219,26 @@ export function buildBuy(route: Route, amountIn: bigint, minOut: bigint, feeWall
 }
 
 /**
+ * Claim (session 1.6): the VeulClaims contract has already sent the claimed USDG to the router, so the router pays
+ * the pool from its own balance (payer = router, amount = the router's whole USDG balance) and sends the stock to
+ * the trader by address. MSG_SENDER would be the claims contract here, so the recipient is always explicit.
+ * Same encoding as contracts/test/VeulClaims.fork.t.sol, which runs it against the real router.
+ */
+export function buildClaimSwap(stock: { token: Address; hop: Hop }, minOut: bigint, recipient: Address): SwapPlan {
+  const { hop, token } = stock;
+  if (hop.version === "v3") {
+    return new Plan().add(CMD.V3_SWAP_EXACT_IN, enc.v3ExactIn(recipient, CONTRACT_BALANCE, minOut, v3Path([USDG, token], [hop.fee]), false)).build(0n);
+  }
+  const actions = [V4.SETTLE, V4.SWAP_EXACT_IN_SINGLE, V4.TAKE];
+  const params = [
+    v4Param.settle(USDG, CONTRACT_BALANCE, false),
+    v4Param.swapExactInSingle(hop.key, same(hop.key.currency0, USDG), OPEN_DELTA, minOut),
+    v4Param.take(token, recipient, OPEN_DELTA),
+  ];
+  return new Plan().add(CMD.V4_SWAP, v4Swap(actions, params)).build(0n);
+}
+
+/**
  * Sell: `amountIn` tokens from the trader through Permit2 (optional fresh permit + signature in the same call).
  * The ETH comes back to the router, 0.5% goes to `feeWallet`, and the rest (at least `minOutEth`) to the trader.
  */

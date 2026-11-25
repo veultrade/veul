@@ -6,6 +6,7 @@ import { Halftone } from "@/components/v3/Halftone";
 import { PAYBACK_TICKERS, formatFixed, formatPrice } from "@/lib/tokens";
 import { useMarket } from "./MarketProvider";
 import { useBag } from "./BagStore";
+import { ClaimPanel } from "./ClaimPanel";
 import { Tween } from "./motion";
 import { TokenAvatar } from "./TokenAvatar";
 import styles from "./Screens.module.css";
@@ -60,12 +61,7 @@ export function BagScreen() {
               {summary.length > 0 ? summary.join(" · ") : "No trades yet"} · valued at live prices
             </span>
           </div>
-          <div className={styles.claim}>
-            <button type="button" className="btn btn-main" disabled>
-              Claim to wallet
-            </button>
-            <span className={styles.muted}>Weekly claims are the next step; paybacks are already counted.</span>
-          </div>
+          <ClaimPanel />
         </div>
         <div className={styles.heroDots}>
           <Halftone draw={drawTotal} drawKey={totalText} cell={9} maxDot={0.95} floor={0.2} interactive className={styles.heroDotsInner} />

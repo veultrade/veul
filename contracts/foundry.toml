@@ -1,0 +1,21 @@
+# Veul contracts: the weekly payback claim (session 1.6).
+# forge-std is vendored in lib/ (MIT); there are no other dependencies.
+
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+script = "script"
+solc = "0.8.28"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 10_000
+bytecode_hash = "none"
+cbor_metadata = false
+auto_detect_remappings = false
+remappings = ["forge-std/=lib/forge-std/src/"]
+
+[rpc_endpoints]
+# Robinhood Chain mainnet for fork tests: set RH_RPC_URL in the environment (our Alchemy URL; never committed).
+robinhood = "${RH_RPC_URL}"

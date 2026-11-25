@@ -95,4 +95,25 @@ export async function realSwap(args: {
   return { hash, minOut: built.minOut, usd: built.usd, amountOut: built.quote.amountOut };
 }
 
+/**
+ * Weekly claim (session 1.6): the server builds and simulates claimAndSwap on the VeulClaims contract; the wallet
+ * signs and sends it. The stock lands in the wallet in that one transaction.
+ */
+export async function realClaim(args: { wallet: WalletClient; account: Hex; ticker: string; slippageBps: number; onStep: (step: SwapStep) => void }) {
+  const { wallet, account, ticker, slippageBps, onStep } = args;
+  onStep("building");
+  const built = await getJson<{ tx: { to: Hex; data: Hex; value: string; gas: string }; claimableUsdg: string; amountOut: string; minOut: string }>("/api/claim", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ account, ticker, slippageBps }),
+  });
+  onStep("confirm-in-wallet");
+  const hash = await wallet.sendTransaction({ account, chain: wallet.chain, to: built.tx.to, data: built.tx.data, value: 0n, gas: BigInt(built.tx.gas) });
+  onStep("pending");
+  const status = await waitFor(hash);
+  if (status !== "success") throw new Error("The claim failed onchain. Nothing was paid out; only gas was spent.");
+  onStep("done");
+  return { hash, claimedUsdg: built.claimableUsdg, amountOut: built.amountOut };
+}
+
 export const explorerTx = (hash: string) => `https://robinhoodchain.blockscout.com/tx/${hash}`;
