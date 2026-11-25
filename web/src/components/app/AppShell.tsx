@@ -150,8 +150,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
             </header>
 
-            {/* The trade screen runs edge to edge (a terminal); the other screens keep the centred page width. */}
-            <main className={pathname === "/" ? styles.mainFull : styles.main}>
+            {/* The trade and discover screens run edge to edge (a terminal); the others keep the centred page width. */}
+            <main className={pathname === "/" || pathname === "/discover" ? styles.mainFull : styles.main}>
               {/* Keyed by route so each screen fades up as it opens. */}
               <div key={pathname} className={styles.screen}>
                 {children}

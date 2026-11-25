@@ -1,0 +1,464 @@
+/* Discover in the trade screen's terminal look: edge to edge, hairlines, dense sortable table. */
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 56px);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tabs {
+  display: flex;
+  gap: 18px;
+}
+
+.tabs button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 0 13px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s var(--ease);
+}
+
+.tabs button:hover,
+.tabs .tabOn {
+  color: var(--text);
+}
+
+.tabs .tabOn::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lav);
+}
+
+.count {
+  padding: 0 5px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--faint);
+  background: #161615;
+}
+
+.tabOn .count {
+  color: var(--lav);
+  background: rgba(58, 160, 219, 0.12);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.filter {
+  width: 240px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s var(--ease);
+}
+
+.filter:focus {
+  border-color: var(--lav);
+}
+
+.filter::placeholder {
+  color: var(--faint);
+}
+
+.riskPick {
+  display: flex;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+}
+
+.riskPick button {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.riskPick .riskOn {
+  color: var(--text);
+  background: #232321;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.check input {
+  accent-color: var(--lav);
+}
+
+.updated {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* ---------- Totals strip ---------- */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.strip div {
+  display: grid;
+  gap: 3px;
+  padding: 12px 16px;
+  border-right: 1px solid var(--line);
+}
+
+.strip div:last-child {
+  border-right: 0;
+}
+
+.strip dt {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.strip dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.strip a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.strip a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--line-2);
+}
+
+/* ---------- Table ---------- */
+.tableWrap {
+  flex: 1;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  position: sticky;
+  top: 56px;
+  z-index: 2;
+  padding: 0 16px;
+  height: 34px;
+  font-size: 11px;
+  font-weight: 400;
+  text-align: right;
+  color: var(--faint);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 9px 16px;
+  text-align: right;
+  border-bottom: 1px solid #121211;
+  white-space: nowrap;
+}
+
+.colRank {
+  width: 44px;
+  text-align: left !important;
+  color: var(--faint);
+}
+
+.colToken {
+  text-align: left !important;
+}
+
+.colAction {
+  width: 90px;
+}
+
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sort span {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.sort:hover,
+.sortOn {
+  color: var(--text);
+}
+
+.sortOn span {
+  opacity: 1;
+  color: var(--lav);
+}
+
+.table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.12s var(--ease);
+}
+
+.table tbody tr:hover {
+  background: #121211;
+}
+
+.table tbody tr:hover td:first-child {
+  box-shadow: inset 2px 0 0 var(--lav);
+}
+
+.table tbody tr:active {
+  background: #181816;
+}
+
+.dim {
+  opacity: 0.5;
+}
+
+.token {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.token > span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.token strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.token small {
+  max-width: 220px;
+  overflow: hidden;
+  font-size: 11.5px;
+  color: var(--faint);
+  text-overflow: ellipsis;
+}
+
+.stock {
+  padding: 0 4px;
+  border-radius: 3px;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--lav);
+  background: rgba(58, 160, 219, 0.14);
+}
+
+.up {
+  color: var(--up);
+}
+
+.down {
+  color: var(--down);
+}
+
+/* "Trade →" appears on the row the pointer is on. */
+.trade {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #000;
+  background: var(--text);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+.table tbody tr:hover .trade {
+  opacity: 1;
+  transform: none;
+}
+
+.skeleton td {
+  padding: 13px 16px;
+}
+
+.none {
+  padding: 28px 16px !important;
+  text-align: left !important;
+  color: var(--muted);
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px;
+  padding: 14px 18px;
+  border: 1px dashed var(--line-2);
+  border-radius: 12px;
+}
+
+.empty p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.foot {
+  margin: 0;
+  padding: 14px 16px 24px;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+@media (max-width: 1100px) {
+  .hideMd {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .hideSm,
+  .colAction,
+  .colRank {
+    display: none;
+  }
+
+  .strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .strip div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .strip div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .controls,
+  .filter {
+    width: 100%;
+  }
+
+  .tabs {
+    overflow-x: auto;
+  }
+
+  .tableWrap {
+    overflow-x: auto;
+  }
+
+  /* Sticky headers do not work inside a horizontal scroller; on phones the header simply scrolls with the page. */
+  .table th {
+    position: static;
+  }
+
+  .table {
+    font-size: 12px;
+  }
+
+  /* Risk badges are the widest cell on a phone: smaller type there keeps the table inside the screen. */
+  .table td:nth-last-child(2) > * {
+    font-size: 10px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .table td,
+  .table th {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .table td:first-child,
+  .table th:first-child {
+    padding-left: 12px;
+  }
+
+  .token {
+    gap: 8px;
+  }
+
+  .token small {
+    display: none;
+  }
+
+  .screen {
+    min-height: 0;
+  }
+}
