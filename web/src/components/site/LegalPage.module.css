@@ -6,7 +6,8 @@
 
 .page h1 {
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 600;
+  letter-spacing: -0.045em;
   font-size: clamp(36px, 5vw, 52px);
   margin: 0 0 12px;
 }
@@ -19,14 +20,15 @@
 
 .body h2 {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   font-size: 20px;
   margin: 40px 0 12px;
 }
 
 .body p,
 .body li {
-  color: #c4c4cf;
+  color: var(--muted);
   font-size: 16px;
   line-height: 1.7;
   text-wrap: pretty;

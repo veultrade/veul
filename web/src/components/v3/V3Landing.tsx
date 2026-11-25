@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Wordmark } from "@/components/site/Wordmark";
+import { Button, V3Shell } from "./Chrome";
 import { DotField } from "./DotField";
 import { EarnTabs } from "./EarnTabs";
 import { Estimate } from "./Estimate";
@@ -9,8 +8,8 @@ import { Steps } from "./Steps";
 import styles from "./V3Landing.module.css";
 
 /**
- * Landing v3, after datavendor.ai (approved 2026-11-25): black ground, Geist, amber accent,
- * every visual a halftone of a grayscale render. Lives at /v3; the main landing at / is untouched.
+ * The landing (v3, after datavendor.ai, 2026-11-25): black ground, Geist, blue accent from the logo,
+ * every visual a halftone of a grayscale render. Header and footer come from Chrome.tsx.
  */
 
 const TICKERS = ["NVDA", "TSLA", "SPY", "GOOGL", "AAPL", "MSFT", "AMZN", "META"];
@@ -25,49 +24,9 @@ const FAQS = [
   { q: "Is there a Veul token?", a: "No. The product comes first. If a token ever comes, it will be announced here and on our X account, never in a DM." },
 ];
 
-// Footer link columns, laid out like the reference's (four even columns, title then links).
-const FOOTER_COLUMNS = [
-  { title: "Product", links: [{ href: "/app", label: "Swap" }, { href: "/app/bag", label: "Stock bag" }, { href: "/app/ledger", label: "Ledger" }, { href: "/app/rewards", label: "Rewards" }] },
-  { title: "Learn", links: [{ href: "#how", label: "How it works" }, { href: "#stocks", label: "Stocks" }, { href: "#estimate", label: "Estimate" }, { href: "#faq", label: "FAQ" }] },
-  { title: "Legal", links: [{ href: "/terms", label: "Terms of use" }, { href: "/privacy", label: "Privacy" }] },
-  { title: "Get started", links: [{ href: "/app", label: "Go to app" }, { href: "/app/discover", label: "Discover tokens" }] },
-];
-
-function Arrow() {
-  return (
-    <svg className={styles.arrow} viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function Button({ href, children, tone = "light" }: { href: string; children: React.ReactNode; tone?: "light" | "dark" }) {
-  return (
-    <Link href={href} className={`${styles.button} ${tone === "light" ? styles.buttonLight : styles.buttonDark}`}>
-      {children}
-      <Arrow />
-    </Link>
-  );
-}
-
 export function V3Landing() {
   return (
-    <div className={styles.root}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <Wordmark name="Veul" href="/" />
-          <nav className={styles.nav} aria-label="Main">
-            <a href="#how">How it works</a>
-            <a href="#stocks">Stocks</a>
-            <a href="#estimate">Estimate</a>
-            <a href="#faq">FAQ</a>
-          </nav>
-          <Link href="/app" className={`${styles.button} ${styles.buttonLight} ${styles.headerButton}`}>
-            Go to app
-          </Link>
-        </div>
-      </header>
-
+    <V3Shell>
       <main>
         {/* Hero: the halftone fills the screen; type sits on a soft dark wash so it stays readable. */}
         <section className={styles.hero}>
@@ -181,40 +140,6 @@ export function V3Landing() {
           </section>
         </div>
       </main>
-
-      <footer className={styles.footer}>
-        <div className={styles.container}>
-          <nav className={styles.footerColumns} aria-label="Footer">
-            {FOOTER_COLUMNS.map((column) => (
-              <div key={column.title}>
-                <h3>{column.title}</h3>
-                <ul>
-                  {column.links.map((link) => (
-                    <li key={link.label}>
-                      <Link href={link.href}>{link.label}</Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </nav>
-          <div className={styles.footerBottom}>
-            <p className={styles.footerBy}>
-              Built on <strong>Robinhood Chain</strong>. Swaps through <strong>Uniswap</strong>.
-            </p>
-            <svg className={styles.footerMark} viewBox="130 264 741 500" role="img" aria-label="Veul">
-              <path d="M376.5 264L510 514H737L603 764H357L473.5 546.5H281.5L130.5 264H376.5ZM870.5 264L803.5 389H557.5L624.5 264H870.5Z" />
-            </svg>
-          </div>
-          <p className={styles.footerNote}>
-            Memecoins can lose all of their value. Stock tokens are issued by Robinhood, not by Veul, and follow their stocks up and down. Veul is not available to
-            US persons. Paybacks shown on this page are samples until launch. Nothing here is financial advice.
-          </p>
-        </div>
-        <div className={styles.footerMedia}>
-          <Halftone src={MEDIA.dunes} cell={10} maxDot={1} floor={0.03} gamma={0.6} interactive className={styles.footerDots} />
-        </div>
-      </footer>
-    </div>
+    </V3Shell>
   );
 }

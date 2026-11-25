@@ -1,23 +1,17 @@
-import Link from "next/link";
-import { SiteHeader } from "@/components/site/SiteHeader";
-import { SiteFooter } from "@/components/site/SiteFooter";
-import { LightWell } from "@/components/site/LightWell";
+import { Button, V3Shell } from "@/components/v3/Chrome";
 
+/** Branded 404 in the site's shared frame. */
 export default function NotFound() {
   return (
-    <>
-      <SiteHeader />
-      <main style={{ position: "relative", minHeight: "80vh", display: "grid", placeItems: "center", textAlign: "center", overflow: "hidden", padding: "200px 24px 120px" }}>
-        <LightWell size="sm" />
-        <div style={{ position: "relative", marginTop: 80 }}>
-          <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 300, fontSize: "clamp(40px, 6vw, 72px)", margin: "0 0 16px" }}>Nothing to stock up on here.</h1>
-          <p style={{ color: "var(--muted)", margin: "0 0 32px" }}>This page does not exist. Check the link, or head back.</p>
-          <Link className="btn btn-main" href="/">
-            Back to Stockup
-          </Link>
+    <V3Shell>
+      <main style={{ minHeight: "70vh", display: "grid", placeItems: "center", textAlign: "center", padding: "160px 24px 96px" }}>
+        <div style={{ display: "grid", justifyItems: "center", gap: 20 }}>
+          <p style={{ margin: 0, fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--lav)", letterSpacing: "0.04em" }}>404</p>
+          <h1 style={{ margin: 0, fontWeight: 600, fontSize: "clamp(40px, 6vw, 72px)", lineHeight: 1, letterSpacing: "-0.05em" }}>Nothing to swap here.</h1>
+          <p style={{ margin: "0 0 12px", color: "var(--muted)" }}>This page does not exist. Check the link, or head back.</p>
+          <Button href="/">Back to Veul</Button>
         </div>
       </main>
-      <SiteFooter />
-    </>
+    </V3Shell>
   );
 }
