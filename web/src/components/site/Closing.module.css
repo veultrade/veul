@@ -1,0 +1,16 @@
+.close {
+  position: relative;
+  padding: 220px 24px 160px;
+  text-align: center;
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+}
+
+.title {
+  position: relative;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(36px, 4.6vw, 60px);
+  margin: 120px 0 28px;
+  text-wrap: balance;
+}

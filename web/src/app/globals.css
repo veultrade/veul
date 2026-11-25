@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+/*
+  Veul design tokens, the v3 look (after datavendor.ai, 2026-11-25): black ground, warm off-white type,
+  one blue accent taken from the logo's navy-to-teal gradient, Geist. The landing (components/v3) uses the
+  same values under its own --v3-* names.
+  Old names are kept so existing markup keeps working: --lav is the accent, --gold is the payback colour
+  (now the same blue), --violet is the main button (now off-white, as on the landing).
+*/
+:root {
+  --bg: #000;
+  --bg-2: #0c0c0b;
+  --panel: #161615;
+  --well: #0f0f0e;
+  --line: #262624;
+  --line-2: #363633;
+  --text: #f7f6f3;
+  --muted: #9a9993;
+  --faint: #64635f;
+  --lav: #3aa0db;
+  --lav-2: #7cc4ec;
+  --plum: #1f5f86;
+  --gold: #3aa0db;
+  --violet: #f7f6f3;
+  --violet-hover: #ffffff;
+  --violet-active: #e4e3df;
+  --up: #57d38c;
+  --down: #ff8a8a;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-display: var(--font-geist), system-ui, sans-serif;
+  --font-body: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-lav: var(--lav);
+  --color-gold: var(--gold);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--lav);
+  color: #000;
+}
+
+:focus-visible {
+  outline: 2px solid var(--lav);
+  outline-offset: 3px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+}
+
+/*
+  Shared buttons, as on the landing (after datavendor.ai): small, 8 px radius, medium 14 px.
+  Main = off-white with black text, for the one action; quiet = dark panel with a hairline.
+  btn-lav and btn-dark are kept as aliases for older markup.
+*/
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  min-width: 120px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn-main,
+.btn-lav {
+  color: #000;
+  background: var(--violet);
+  border-color: var(--violet);
+}
+.btn-main:hover,
+.btn-lav:hover {
+  background: var(--violet-hover);
+  border-color: var(--violet-hover);
+}
+.btn-main:active,
+.btn-lav:active {
+  background: var(--violet-active);
+  border-color: var(--violet-active);
+}
+.btn-main:focus-visible,
+.btn-lav:focus-visible {
+  outline: 2px solid var(--lav);
+  outline-offset: 2px;
+}
+
+.btn-quiet,
+.btn-dark {
+  color: var(--text);
+  background: var(--panel);
+  border-color: var(--line-2);
+}
+.btn-quiet:hover,
+.btn-dark:hover {
+  background: #20201e;
+  border-color: #46463f;
+}
+
+/* Header size. */
+.btn-sm {
+  height: 32px;
+  min-width: 0;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

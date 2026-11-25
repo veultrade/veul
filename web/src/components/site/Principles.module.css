@@ -1,0 +1,89 @@
+.list {
+  list-style: none;
+  margin: 56px 0 0;
+  padding: 0;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 32px;
+  padding: 48px 0;
+  border-top: 1px solid var(--s-line);
+}
+
+.row:last-child {
+  border-bottom: 1px solid var(--s-line);
+}
+
+.num {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1;
+  color: #c9c9cf;
+  padding-right: 32px;
+  border-right: 1px solid var(--s-line);
+  text-align: right;
+}
+
+.body h3 {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(26px, 2.8vw, 34px);
+  line-height: 1.1;
+}
+
+.body p {
+  margin: 0;
+  max-width: 520px;
+  color: var(--s-muted);
+  font-size: 16px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+/* Perena's quiet button on a light ground (bg, border and inset shadows measured on perena.org). */
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
+  margin-top: 24px;
+  padding: 0 20px;
+  border-radius: 19px;
+  border: 1px solid #d0cdc4;
+  background: #f2f0e9;
+  color: #18181b;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: inset 0 8px 16px 0 rgba(255, 255, 255, 0.02), inset 0 -4px 8px 0 rgba(0, 0, 0, 0.02), inset 0 2px 0 0 rgba(255, 255, 255, 0.02), inset 0 1px 0.5px 0.05px rgba(24, 24, 27, 0.05);
+  transition: background-color 0.2s cubic-bezier(0.45, 0.05, 0.55, 0.95), transform 0.2s var(--ease);
+}
+
+.action:hover {
+  background: #e9e6dc;
+}
+
+.action:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 700px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 36px 0;
+  }
+  .num {
+    border-right: 0;
+    text-align: left;
+    padding: 0;
+  }
+}

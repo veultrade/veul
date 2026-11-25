@@ -1,0 +1,73 @@
+.head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: end;
+}
+
+.head > * {
+  margin: 0;
+}
+
+.tableWrap {
+  margin-top: 56px;
+  overflow-x: auto;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid var(--s-line);
+}
+
+.table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+.table th,
+.table td {
+  padding: 20px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--s-line);
+}
+
+.table thead th {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--s-muted);
+}
+
+.table tbody th {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 18px;
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Our row: a quiet lavender tint, the payback set in the accent. */
+.ours {
+  background: #f1effc;
+}
+
+.ours td:nth-child(3),
+.ours td:nth-child(4) {
+  color: var(--s-accent);
+  font-weight: 500;
+}
+
+.note {
+  margin: 24px 0 0;
+  font-size: 12px;
+  color: var(--s-muted);
+}
+
+@media (max-width: 900px) {
+  .head {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

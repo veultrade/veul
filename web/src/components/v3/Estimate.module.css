@@ -1,0 +1,52 @@
+.wrap {
+  display: grid;
+  gap: 40px;
+}
+
+.controls {
+  display: grid;
+  gap: 16px;
+  max-width: 520px;
+}
+
+.label {
+  color: var(--v3-muted);
+  font-size: 15px;
+}
+
+.label strong {
+  margin-left: 6px;
+  color: var(--v3-text);
+  font-weight: 600;
+}
+
+/* Thin track, round thumb, amber fill colour from accent-color. */
+.range {
+  width: 100%;
+  accent-color: var(--v3-accent);
+  cursor: pointer;
+}
+
+.result {
+  margin: 0;
+  color: var(--v3-muted);
+}
+
+.result strong {
+  color: var(--v3-accent);
+  font-weight: 600;
+}
+
+.number {
+  aspect-ratio: 1280 / 340;
+  min-height: 180px;
+  background-image: radial-gradient(circle, rgba(247, 246, 243, 0.14) 1px, transparent 1.4px);
+  background-size: 10px 10px;
+  background-position: center;
+}
+
+@media (max-width: 640px) {
+  .number {
+    aspect-ratio: 4 / 3;
+  }
+}

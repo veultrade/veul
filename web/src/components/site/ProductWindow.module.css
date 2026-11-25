@@ -1,0 +1,154 @@
+.head > * {
+  margin: 0;
+}
+
+.head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: end;
+  margin-bottom: 56px;
+}
+
+.window {
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
+  background: #0d0d10;
+  /* The window is a dark app on a light band: reset the text colour the band sets. */
+  color: var(--text);
+  box-shadow: 0 40px 80px -36px rgba(18, 18, 19, 0.45), 0 0 0 1px rgba(18, 18, 19, 0.04);
+  overflow: hidden;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.tabs span {
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.tabOn {
+  background: #1d1d24;
+  color: var(--text);
+}
+
+.wallet {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 6px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: 24px;
+  padding: 32px;
+  justify-content: center;
+}
+
+.body > * {
+  min-width: 0;
+}
+
+.bag {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #111115;
+}
+
+.bagTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.bagTop h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 18px;
+}
+
+.tag {
+  font-size: 11px;
+  color: var(--faint);
+  border: 1px dashed var(--line-2);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.total {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 48px;
+  letter-spacing: -0.01em;
+}
+
+.total small {
+  font-size: 18px;
+  color: var(--muted);
+  margin-left: 8px;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rows li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.gold {
+  color: var(--gold);
+}
+
+.age {
+  color: var(--faint);
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .head,
+  .body {
+    grid-template-columns: 1fr;
+  }
+  .body {
+    padding: 16px;
+  }
+  .tabs,
+  .wallet {
+    display: none;
+  }
+  .rows li {
+    grid-template-columns: 1fr auto;
+  }
+  .age {
+    display: none;
+  }
+}

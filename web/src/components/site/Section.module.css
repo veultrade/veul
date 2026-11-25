@@ -1,0 +1,94 @@
+.section {
+  position: relative;
+  padding: 140px 0;
+  background: var(--s-bg);
+  color: var(--s-text);
+  scroll-margin-top: 40px;
+}
+
+/* The four grounds, measured from glowfinance.xyz. */
+.dark {
+  --s-bg: var(--bg);
+  --s-text: var(--text);
+  --s-muted: var(--muted);
+  --s-line: var(--line);
+  --s-accent: var(--lav);
+  --s-card: rgba(255, 255, 255, 0.015);
+}
+
+.night {
+  --s-bg: #1e1e22;
+  --s-text: var(--text);
+  --s-muted: #9a9aa6;
+  --s-line: #303038;
+  --s-accent: var(--lav);
+  --s-card: rgba(255, 255, 255, 0.02);
+}
+
+.light {
+  --s-bg: #ffffff;
+  --s-text: #121213;
+  --s-muted: #6b6b74;
+  --s-line: #e4e4e8;
+  --s-accent: #6a52c9;
+  --s-card: #fafafb;
+}
+
+.mist {
+  --s-bg: #f3f3f3;
+  --s-text: #121213;
+  --s-muted: #6b6b74;
+  --s-line: #dcdce0;
+  --s-accent: #6a52c9;
+  --s-card: #ffffff;
+}
+
+.light,
+.mist {
+  border-top: 1px solid var(--s-line);
+}
+
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(36px, 4.6vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.005em;
+  margin: 0 0 16px;
+  text-wrap: balance;
+}
+
+.title em {
+  font-style: normal;
+  color: var(--s-accent);
+}
+
+.lede {
+  color: var(--s-muted);
+  font-size: 17px;
+  line-height: 1.6;
+  max-width: 540px;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.center {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 900px) {
+  .section {
+    padding: 96px 0;
+  }
+  .wrap {
+    padding: 0 16px;
+  }
+}

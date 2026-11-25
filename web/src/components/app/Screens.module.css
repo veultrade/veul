@@ -1,0 +1,272 @@
+/* Shared styles for the Stock bag and Ledger screens. */
+.page {
+  display: grid;
+  gap: 24px;
+  max-width: 920px;
+}
+
+.title h1 {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 32px;
+  letter-spacing: -0.04em;
+}
+
+.title p {
+  margin: 0;
+  max-width: 560px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.muted {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px;
+  border-radius: 24px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(58, 160, 219, 0.12), transparent 55%),
+    var(--panel);
+  border: 1px solid var(--line-2);
+}
+
+.hero > div {
+  display: grid;
+  gap: 6px;
+}
+
+.kicker {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.total {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  font-size: clamp(40px, 6vw, 60px);
+  line-height: 1.05;
+  color: var(--gold);
+}
+
+.claim {
+  justify-items: end;
+  text-align: right;
+}
+
+.stocks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stock {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 18px;
+  border-radius: 18px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+}
+
+.stockOn {
+  border-color: rgba(58, 160, 219, 0.45);
+}
+
+.stockHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.stockHead strong {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.badge {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.amount {
+  font-size: 20px;
+  color: var(--text);
+}
+
+.switch {
+  justify-self: start;
+  margin-top: 6px;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--lav);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.switch:hover {
+  color: var(--lav-2);
+}
+
+.empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 18px;
+  border: 1px dashed var(--line-2);
+}
+
+.empty p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.tableWrap {
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+  color: var(--faint);
+  border-bottom: 1px solid var(--line);
+}
+
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table .num {
+  text-align: right;
+}
+
+.table td:global(.mono) {
+  font-size: 13px;
+}
+
+.buy {
+  color: var(--up);
+}
+
+.sell {
+  color: var(--down);
+}
+
+.gold {
+  color: var(--gold);
+}
+
+.pill {
+  font-size: 11px;
+  color: var(--faint);
+  border: 1px dashed var(--line-2);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+@media (max-width: 1100px) {
+  .stocks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 22px;
+  }
+
+  .claim {
+    justify-items: stretch;
+    text-align: left;
+    width: 100%;
+  }
+
+  .claim :global(.btn),
+  .claim button {
+    width: 100%;
+  }
+
+  /* Ledger rows become small cards with labels on phones. */
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+  }
+
+  .table tr {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border: 0;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--faint);
+  }
+}
+
+.pillReal {
+  color: var(--up);
+  border-style: solid;
+  border-color: var(--up);
+  text-decoration: none;
+}

@@ -1,0 +1,94 @@
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  gap: 32px;
+  align-content: start;
+}
+
+.head {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bar {
+  position: relative;
+  height: 2px;
+  margin-bottom: 16px;
+  background: var(--v3-line);
+  overflow: hidden;
+}
+
+/* The active step's bar fills over the step's time, then the next step takes over. */
+.fill {
+  position: absolute;
+  inset: 0;
+  background: var(--v3-accent);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+.active .fill {
+  animation: fill linear forwards;
+}
+
+@keyframes fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.text {
+  color: var(--v3-muted);
+  line-height: 1.55;
+}
+
+.media {
+  aspect-ratio: 1;
+}
+
+.step .dots {
+  color: rgba(247, 246, 243, 0.85);
+}
+
+.active .dots {
+  color: var(--v3-accent);
+}
+
+@media (max-width: 900px) {
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+
+  .media {
+    max-width: 420px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active .fill {
+    animation: none;
+    transform: scaleX(1);
+  }
+}

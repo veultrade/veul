@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <!-- Favicon: the V mark on the navy-to-teal gradient from assets/brand/veul-mark-on-gradient.png. -->
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.3" stop-color="#07072a"/>
+      <stop offset="1" stop-color="#035e8a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="1000" rx="220" fill="url(#ground)"/>
+  <path d="M376.5 264L510 514H737L603 764H357L473.5 546.5H281.5L130.5 264H376.5ZM870.5 264L803.5 389H557.5L624.5 264H870.5Z" fill="#fff"/>
+</svg>

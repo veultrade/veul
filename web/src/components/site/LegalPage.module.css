@@ -1,0 +1,43 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 140px 24px 96px;
+}
+
+.page h1 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(36px, 5vw, 52px);
+  margin: 0 0 12px;
+}
+
+.meta {
+  color: var(--faint);
+  font-size: 14px;
+  margin: 0 0 48px;
+}
+
+.body h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  margin: 40px 0 12px;
+}
+
+.body p,
+.body li {
+  color: #c4c4cf;
+  font-size: 16px;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+/* Tailwind's reset removes list markers; bring them back for reading pages. */
+.body ul {
+  list-style: disc;
+  padding-left: 20px;
+}
+
+.body li::marker {
+  color: var(--lav);
+}

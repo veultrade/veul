@@ -1,0 +1,25 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 20px;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.sm {
+  font-size: 15px;
+  gap: 8px;
+}
+
+/* The mark is wider than tall (741 x 500); its height follows the text size. */
+.mark {
+  height: 0.9em;
+  width: auto;
+  aspect-ratio: 741 / 500;
+  flex-shrink: 0;
+  fill: currentColor;
+}

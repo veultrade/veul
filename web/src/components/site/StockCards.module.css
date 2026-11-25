@@ -1,0 +1,103 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 64px;
+  border-top: 1px solid var(--s-line);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px 24px 8px;
+  text-align: center;
+}
+
+.card + .card {
+  border-left: 1px solid var(--s-line);
+}
+
+.card h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 24px;
+}
+
+/* A fine grid panel, like the placeholders on Glow's vault cards, holding the company mark. */
+.art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  background-color: #ebebee;
+  background-image:
+    linear-gradient(rgba(18, 18, 19, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 18, 19, 0.06) 1px, transparent 1px);
+  background-size: 16px 16px;
+  transition: background-color 0.4s var(--ease);
+}
+
+.card:hover .art {
+  background-color: #e6e4f3;
+}
+
+.art img {
+  filter: invert(1) brightness(0.15);
+}
+
+/* Google's mark is multicolour: keep its colours. */
+.art img[src*="google"] {
+  filter: none;
+}
+
+.ticker {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 32px;
+  color: #121213;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--s-text);
+}
+
+.card p {
+  margin: 0;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--s-muted);
+}
+
+.note {
+  margin: 48px auto 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--s-muted);
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .card:nth-child(3) {
+    border-left: 0;
+  }
+  .card:nth-child(n + 3) {
+    border-top: 1px solid var(--s-line);
+  }
+}
+
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .card + .card {
+    border-left: 0;
+    border-top: 1px solid var(--s-line);
+  }
+}

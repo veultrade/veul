@@ -1,0 +1,56 @@
+.root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.well {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  width: min(760px, 86vw);
+  height: 220px;
+  transform: translateX(-50%) perspective(700px) rotateX(58deg);
+  border-radius: 6px;
+  background: linear-gradient(#ffffff, #d9daff 40%, var(--lav));
+  box-shadow:
+    0 0 40px 10px rgba(201, 202, 255, 0.9),
+    0 0 140px 60px rgba(163, 164, 236, 0.45),
+    0 0 320px 140px rgba(112, 93, 134, 0.35);
+}
+
+/* Two inset frames read as the edges of the light panel. */
+.well::before,
+.well::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+}
+
+.well::after {
+  inset: 34px;
+  opacity: 0.6;
+}
+
+.beam {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  width: min(900px, 96vw);
+  height: 560px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse 50% 60% at 50% 0%, rgba(163, 164, 236, 0.35), rgba(112, 93, 134, 0.12) 50%, transparent 75%);
+  filter: blur(10px);
+}
+
+.sm .well {
+  top: 40px;
+  width: min(460px, 70vw);
+  height: 150px;
+}
+
+.sm .beam {
+  top: 140px;
+}

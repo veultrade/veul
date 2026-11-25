@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Preview of the Stockup landing (codename folder: stockback). Name confirmed with the user before the first deploy.
+  "name": "stockup-preview",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "stockup-preview" }],
+  // Trending and new-pool lists pushed by the fetcher on the VPS (GMGN bans Cloudflare's shared IPs).
+  "kv_namespaces": [{ "binding": "MARKET_FEED", "id": "eb49ed073bae47fa9ff8c47b66912969" }],
+  // Ledger of verified real swaps and paybacks (session 1.5). Schema in migrations/.
+  "d1_databases": [{ "binding": "LEDGER", "database_name": "stockup-ledger", "database_id": "ac76767b-f09c-4d30-be4f-831b904eb6e8", "migrations_dir": "migrations" }],
+  "workers_dev": true,
+  // No public URL per uploaded version.
+  "preview_urls": false,
+  "observability": { "enabled": true }
+}

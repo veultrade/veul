@@ -1,0 +1,571 @@
+/* Styles for Discover, Wallet, Rewards, Agents and More. Page frame and titles come from Screens.module.css. */
+
+.risk {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  border: 1px solid currentColor;
+}
+
+.low {
+  color: var(--up);
+}
+
+.medium {
+  color: var(--gold);
+}
+
+.high {
+  color: var(--down);
+}
+
+.segment {
+  justify-self: start;
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segment button {
+  font: inherit;
+  font-size: 14px;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.segment button:hover {
+  color: var(--text);
+}
+
+.segment .segOn {
+  color: var(--text);
+  background: #1f1f1d;
+}
+
+/* Token list (Discover) */
+.tokenTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tokenTable th {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 400;
+  text-align: right;
+  color: var(--faint);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.tokenTable th:first-child,
+.tokenTable td:first-child {
+  text-align: left;
+}
+
+.tokenTable td {
+  padding: 12px 16px;
+  text-align: right;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.tokenTable tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease);
+}
+
+.tokenTable tbody tr:hover {
+  background: #121211;
+}
+
+.tokenTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tokenCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.tokenCell strong {
+  font-weight: 500;
+}
+
+.tokenCell span {
+  display: grid;
+  gap: 2px;
+}
+
+.tokenCell small {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.up {
+  color: var(--up);
+}
+
+.down {
+  color: var(--down);
+}
+
+.hideSm {
+  /* columns dropped on phones */
+}
+
+.showSm {
+  display: none;
+}
+
+/* Generic panel */
+.panel {
+  align-content: start;
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  min-width: 0;
+}
+
+.panel h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-size: 20px;
+}
+
+.panel p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  display: grid;
+  gap: 4px;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+}
+
+.stat span {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.stat strong {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-size: 28px;
+}
+
+.gold {
+  color: var(--gold);
+}
+
+.tag {
+  justify-self: start;
+  font-size: 11px;
+  color: var(--faint);
+  border: 1px dashed var(--line-2);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* Address / code box with a copy button */
+.copyRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 6px 6px 14px;
+  border-radius: 14px;
+  background: var(--well);
+  border: 1px solid var(--line);
+}
+
+.copyRow code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.field input {
+  height: 46px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--lav);
+}
+
+.steps {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.steps strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Holdings list */
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+
+.list li:last-child {
+  border-bottom: 0;
+}
+
+.list .grow {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.list .grow small {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.list .end {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.list .end small {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* Rate cards (Rewards) */
+.tier {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+}
+
+.tier strong {
+  font-weight: 500;
+}
+
+.tier .rate {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-size: 26px;
+  color: var(--gold);
+}
+
+.tier small {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Code block (MCP config) */
+.code {
+  margin: 0;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--well);
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--lav-2);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chips span,
+.chips button {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  padding: 5px 10px;
+}
+
+.chips button {
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.chips button:hover {
+  color: var(--text);
+  border-color: var(--lav);
+}
+
+/* Agent chat */
+.chat {
+  display: grid;
+  gap: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.msg {
+  max-width: 85%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.me {
+  justify-self: end;
+  background: rgba(58, 160, 219, 0.14);
+  border-bottom-right-radius: 4px;
+}
+
+.bot {
+  justify-self: start;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+  color: var(--muted);
+}
+
+.order {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--well);
+  border: 1px solid var(--line-2);
+  color: var(--text);
+}
+
+.order div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.order dt {
+  color: var(--faint);
+}
+
+.order dd {
+  margin: 0;
+  text-align: right;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+}
+
+.composer input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.composer input:focus {
+  outline: none;
+  border-color: var(--lav);
+}
+
+.composer button {
+  min-width: 0;
+}
+
+/* More (phones) */
+.moreList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.moreList a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.moreList a span {
+  display: grid;
+  gap: 2px;
+}
+
+.moreList small {
+  font-size: 13px;
+  color: var(--faint);
+}
+
+@media (max-width: 760px) {
+  .grid2,
+  .grid3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .hideSm {
+    display: none;
+  }
+
+  .showSm {
+    display: block;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .tokenTable th,
+  .tokenTable td {
+    padding: 12px 10px;
+  }
+}
+
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bigNumber {
+  font-size: 28px;
+  font-weight: 400;
+}
+
+/* Loading rows while live prices arrive */
+.skeletonRow td {
+  padding: 14px 16px;
+}
+
+.skeletonRow span {
+  display: block;
+  height: 18px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #121211, #1d1d1b, #121211);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.emptyRow td {
+  padding: 28px 20px;
+  text-align: left;
+  white-space: normal;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  cursor: default;
+}

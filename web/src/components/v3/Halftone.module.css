@@ -1,0 +1,22 @@
+.box {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  color: var(--v3-text);
+  transition: color 0.4s var(--ease);
+}
+
+/* The pixel source stays in the DOM (so it loads and plays) but is never seen. */
+.source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

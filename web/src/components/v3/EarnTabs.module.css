@@ -1,0 +1,206 @@
+.layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 48px;
+}
+
+.tabs {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding-top: 8px;
+}
+
+.tab {
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--v3-faint);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s var(--ease);
+}
+
+.tab:hover,
+.tab[aria-selected="true"] {
+  color: var(--v3-text);
+}
+
+/* min-width: 0 so the moving strip (max-content wide) cannot stretch the panel. */
+.panel {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+  padding: 32px 0 28px;
+  border-radius: 12px;
+  background: var(--v3-panel-2);
+  overflow: hidden;
+}
+
+.panelHead {
+  display: grid;
+  gap: 12px;
+  padding: 0 32px;
+}
+
+.panelHead h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.panelHead h3 span {
+  color: var(--v3-faint);
+  font-family: var(--v3-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.panelHead p {
+  max-width: 34em;
+  margin: 0;
+  color: var(--v3-muted);
+  line-height: 1.55;
+}
+
+.sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.sources > span:first-child {
+  margin-right: 4px;
+}
+
+.chip,
+.chipMuted {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--v3-bg);
+  font-size: 12px;
+}
+
+.chipMuted {
+  background: rgba(247, 246, 243, 0.12);
+}
+
+/* Moving strip of sample cards; it fades out at both ends. */
+.strip {
+  display: grid;
+  gap: 12px;
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+.track {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  animation: slide 40s linear infinite;
+}
+
+.trackReverse {
+  animation-direction: reverse;
+  animation-duration: 46s;
+}
+
+.strip:hover .track {
+  animation-play-state: paused;
+}
+
+@keyframes slide {
+  to {
+    transform: translateX(calc(-50% - 6px));
+  }
+}
+
+.card {
+  display: grid;
+  gap: 14px;
+  width: 260px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--v3-bg);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cardIcon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--v3-accent);
+  color: var(--v3-bg);
+  font-weight: 700;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.cardValue {
+  margin-left: auto;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cardTags {
+  display: flex;
+  gap: 6px;
+}
+
+.cardTags span {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--v3-panel-2);
+  color: var(--v3-muted);
+  font-size: 12px;
+}
+
+.sampleNote {
+  margin: 0;
+  padding: 0 32px;
+  color: var(--v3-faint);
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 20px;
+    padding-top: 0;
+  }
+
+  .panelHead,
+  .sampleNote {
+    padding-inline: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+  }
+}

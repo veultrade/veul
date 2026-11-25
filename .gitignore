@@ -1,0 +1,15 @@
+# Secrets: never committed. Scripts read tokens from the environment or from .dev.vars.
+.dev.vars
+.prod.vars
+.env*
+
+# Local working folders: planning notes, prototypes, raw generated media, data snapshots, tool settings.
+docs/
+prototype/
+archive/
+assets-src/
+data/
+.claude/
+
+node_modules/
+.DS_Store
