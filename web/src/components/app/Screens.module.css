@@ -91,6 +91,12 @@
   gap: 8px;
 }
 
+.claimButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .claimDone {
   color: var(--lav);
 }

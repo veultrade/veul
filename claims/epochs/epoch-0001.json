@@ -1,0 +1,14 @@
+{
+  "epoch": 1,
+  "root": "0x49b2db246e55d6dbed399e3b98e59f91d29cc9f75a03e4d29c0e9f415297413f",
+  "totalUsdg": "8079",
+  "upToBlock": 122821872,
+  "leaf": "keccak256(keccak256(abi.encode(address wallet, uint256 cumulativeUsdg)))",
+  "claims": [
+    {
+      "wallet": "0x7da154c84c417c7ca9fabb669f12347c1c43dfac",
+      "cumulativeUsdg": "8079",
+      "proof": []
+    }
+  ]
+}

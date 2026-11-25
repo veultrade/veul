@@ -1,6 +1,6 @@
 import { getAddress, parseUnits, type Address } from "viem";
 import { ADDRESS, fail, json } from "@/lib/server/http";
-import { buildClaim, claimQuote, claimStatus } from "@/lib/server/claims";
+import { buildClaim, buildUsdgClaim, claimQuote, claimStatus } from "@/lib/server/claims";
 import { PAYBACK_TICKERS } from "@/lib/tokens";
 
 const TICKERS = PAYBACK_TICKERS as readonly string[];
@@ -30,6 +30,7 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/claim { account, ticker, slippageBps } — the claim transaction, simulated from the wallet first.
+ * ticker "USDG" claims the USDG itself (no swap, no minimum).
  * The wallet signs and sends it; the server never holds keys.
  */
 export async function POST(request: Request) {
@@ -43,9 +44,10 @@ export async function POST(request: Request) {
   const ticker = String(body.ticker ?? "");
   const slippageBps = Math.min(Math.max(Number(body.slippageBps ?? 100), 10), 500);
   if (!ADDRESS.test(account)) return fail(new Error("Connect a wallet first"), 400);
-  if (!TICKERS.includes(ticker)) return fail(new Error("Unknown stock"), 400);
+  if (ticker !== "USDG" && !TICKERS.includes(ticker)) return fail(new Error("Unknown stock"), 400);
   try {
-    return json(await buildClaim(getAddress(account) as Address, ticker, slippageBps));
+    const wallet = getAddress(account) as Address;
+    return json(ticker === "USDG" ? await buildUsdgClaim(wallet) : await buildClaim(wallet, ticker, slippageBps));
   } catch (error) {
     return fail(error, 422);
   }

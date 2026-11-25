@@ -11,6 +11,7 @@ import styles from "./Screens.module.css";
 
 type Status = {
   open: boolean;
+  usdgOpen: boolean;
   reason: string | null;
   contract: string | null;
   epoch: number;
@@ -37,7 +38,7 @@ export function ClaimPanel() {
   const [status, setStatus] = useState<Status | null>(null);
   const [step, setStep] = useState<SwapStep | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ hash: string; usdg: string; out: string } | null>(null);
+  const [done, setDone] = useState<{ hash: string; usdg: string; out: string; asset: string } | null>(null);
 
   const account = auth.authenticated ? auth.address : null;
   const load = useCallback(async () => {
@@ -54,13 +55,15 @@ export function ClaimPanel() {
     return () => clearTimeout(timer);
   }, [load]);
 
-  const claim = async () => {
+  // asUsdg: claim the USDG itself (no swap, no minimum); otherwise swap into the chosen stock.
+  const claim = async (asUsdg = false) => {
     if (!account) return auth.login();
     setError(null);
     try {
       const wallet = await auth.walletClient();
-      const result = await realClaim({ wallet, account: account as `0x${string}`, ticker: bag.ticker, slippageBps: 100, onStep: setStep });
-      setDone({ hash: result.hash, usdg: result.claimedUsdg, out: result.amountOut });
+      const ticker = asUsdg ? "USDG" : bag.ticker;
+      const result = await realClaim({ wallet, account: account as `0x${string}`, ticker, slippageBps: 100, onStep: setStep });
+      setDone({ hash: result.hash, usdg: result.claimedUsdg, out: result.amountOut, asset: ticker });
       await load();
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : String(reason);
@@ -85,7 +88,9 @@ export function ClaimPanel() {
   else if (done)
     note = (
       <>
-        Claimed {formatFixed(Number(done.usdg), 2)} USDG as about {formatAmount(Number(formatUnits(BigInt(done.out), 18)))} {bag.ticker}.{" "}
+        {done.asset === "USDG"
+          ? `Claimed ${done.usdg} USDG to your wallet.`
+          : `Claimed ${formatFixed(Number(done.usdg), 2)} USDG as about ${formatAmount(Number(formatUnits(BigInt(done.out), 18)))} ${done.asset}.`}{" "}
         <a href={explorerTx(done.hash)} target="_blank" rel="noreferrer">
           View transaction
         </a>
@@ -96,9 +101,17 @@ export function ClaimPanel() {
 
   return (
     <div className={styles.claim}>
-      <button type="button" className="btn btn-main" disabled={Boolean(account) && (busy || !status?.open)} onClick={claim}>
-        {label}
-      </button>
+      <div className={styles.claimButtons}>
+        <button type="button" className="btn btn-main" disabled={Boolean(account) && (busy || !status?.open)} onClick={() => claim(false)}>
+          {label}
+        </button>
+        {/* Small paybacks (below the swap minimum) can still be taken as plain USDG. */}
+        {account && status?.usdgOpen && !busy && (
+          <button type="button" className="btn btn-quiet" onClick={() => claim(true)}>
+            Claim {status.claimableUsdg} USDG
+          </button>
+        )}
+      </div>
       <span className={`${styles.muted} ${done ? styles.claimDone : ""}`} role="status">
         {note}
       </span>

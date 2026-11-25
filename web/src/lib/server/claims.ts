@@ -23,13 +23,17 @@ const claimsAbi = parseAbi([
   "function paused() view returns (bool)",
   "function claimed(address) view returns (uint256)",
   "function claimAndSwap(uint256 cumulative, bytes32[] proof, bytes routerCalldata, address outToken, uint256 minOut) returns (uint256, uint256)",
+  "function claim(uint256 cumulative, bytes32[] proof) returns (uint256)",
 ]);
 
 type Listed = { symbol: string; address: string; pool?: MarketPool | null };
 const STOCKS = (allowlist.tokens as Listed[]).filter((t) => t.pool && (PAYBACK_TICKERS as readonly string[]).includes(t.symbol));
 
 export type ClaimStatus = {
+  /** A claim swapped into stock is possible (at least the minimum is claimable). */
   open: boolean;
+  /** A plain USDG claim is possible (anything above zero; no swap, so no minimum). */
+  usdgOpen: boolean;
   /** Why claiming is not possible right now (contract not live, paused, nothing owed, below the minimum). */
   reason: string | null;
   contract: Address | null;
@@ -60,7 +64,7 @@ async function leafFor(wallet: Address, root: Hex): Promise<{ cumulative: bigint
 export async function claimStatus(wallet: Address): Promise<ClaimStatus & { proof: Hex[] }> {
   const contract = await claimsAddress();
   const empty = { contract, epoch: 0, cumulativeUsdg: "0", claimedUsdg: "0", claimableUsdg: "0", minUsdg: formatUnits(MIN_CLAIM_USDG, USDG_DECIMALS), proof: [] };
-  if (!contract) return { ...empty, open: false, reason: "Claims open once the claims contract is live." };
+  if (!contract) return { ...empty, open: false, usdgOpen: false, reason: "Claims open once the claims contract is live." };
 
   const client = await rpc();
   const read = <T>(functionName: "root" | "epoch" | "paused" | "claimed", args?: readonly [Address]) =>
@@ -77,11 +81,12 @@ export async function claimStatus(wallet: Address): Promise<ClaimStatus & { proo
       : claimable === 0n
         ? "Nothing to claim yet. New paybacks are added every Monday."
         : claimable < MIN_CLAIM_USDG
-          ? `Claims open at ${formatUnits(MIN_CLAIM_USDG, USDG_DECIMALS)} USDG; your payback keeps adding up until then.`
+          ? `Paying out as stock opens at ${formatUnits(MIN_CLAIM_USDG, USDG_DECIMALS)} USDG. Take it as USDG now, or let it add up.`
           : null;
 
   return {
     open: reason === null,
+    usdgOpen: !paused && claimable > 0n,
     reason,
     contract,
     epoch: Number(epoch),
@@ -146,5 +151,27 @@ export async function buildClaim(wallet: Address, ticker: string, slippageBps: n
     stock: ticker,
     amountOut: quoted.amountOut.toString(),
     minOut: minOut.toString(),
+  };
+}
+
+/** A plain USDG claim (no swap): claim(cumulative, proof), simulated from the wallet. No minimum applies. */
+export async function buildUsdgClaim(wallet: Address) {
+  const status = await claimStatus(wallet);
+  if (!status.usdgOpen || !status.contract) throw new Error(status.reason ?? "Nothing to claim");
+  const data = encodeFunctionData({ abi: claimsAbi, functionName: "claim", args: [parseUnits(status.cumulativeUsdg, USDG_DECIMALS), status.proof] });
+  const tx = { to: status.contract, data };
+  const client = await rpc();
+  try {
+    await client.call({ account: wallet, ...tx });
+  } catch {
+    throw new Error("This claim would fail onchain right now.");
+  }
+  const gas = await client.estimateGas({ account: wallet, ...tx }).catch(() => 200_000n);
+  return {
+    tx: { to: tx.to, data: tx.data, value: "0x0", gas: `0x${((gas * 12n) / 10n).toString(16)}` },
+    claimableUsdg: status.claimableUsdg,
+    stock: "USDG",
+    amountOut: parseUnits(status.claimableUsdg, USDG_DECIMALS).toString(),
+    minOut: "0",
   };
 }
