@@ -17,7 +17,17 @@ export function BagScreen() {
   const bag = useBag();
   const market = useMarket();
   const prices = market.data?.paybacks ?? {};
-  const values = PAYBACK_TICKERS.map((ticker) => ({ ticker, amount: bag.totals[ticker], usd: bag.totals[ticker] * (prices[ticker] ?? 0) }));
+  // Real paybacks lead whenever the wallet has any (verified or being checked); a preview-only visitor sees the
+  // simulation, clearly labelled. The two are never added together.
+  const hasReal = (bag.verified?.totals.trades ?? 0) > 0 || bag.pending.length > 0;
+  const showTotals = hasReal ? bag.totals : bag.simulatedTotals;
+  const headlineUsd = hasReal ? bag.totalUsd : bag.simulatedUsd;
+  const values = PAYBACK_TICKERS.map((ticker) => ({
+    ticker,
+    amount: showTotals[ticker],
+    usd: showTotals[ticker] * (prices[ticker] ?? 0),
+    simulated: hasReal ? bag.simulatedTotals[ticker] : 0,
+  }));
   const realTrades = bag.verified?.totals.trades ?? 0;
   const simulated = bag.paybacks.length;
   const summary = [
@@ -26,7 +36,7 @@ export function BagScreen() {
     simulated > 0 && `${simulated} simulated in this browser`,
   ].filter(Boolean);
 
-  const totalText = `$${formatFixed(bag.totalUsd, 2)}`;
+  const totalText = `$${formatFixed(headlineUsd, 2)}`;
   // The total drawn white on black at the sampler's size; the halftone turns it into blue dots.
   const drawTotal = useCallback(
     (context: CanvasRenderingContext2D, width: number, height: number) => {
@@ -55,8 +65,11 @@ export function BagScreen() {
       <section className={styles.hero} aria-label="Bag total">
         <div>
           <div className={styles.heroFacts}>
-            <span className={styles.kicker}>Paid back so far</span>
-            <Tween value={bag.totalUsd} format={(v) => `$${formatFixed(v, 2)}`} className={styles.total} />
+            <span className={styles.kicker}>{!hasReal && bag.simulatedUsd > 0 ? "Simulated paybacks (preview, not real)" : "Paid back so far"}</span>
+            <Tween value={headlineUsd} format={(v) => `$${formatFixed(v, 2)}`} className={styles.total} />
+            {hasReal && bag.simulatedUsd > 0 && (
+              <span className={`mono ${styles.muted}`}>Plus ${formatFixed(bag.simulatedUsd, 2)} from simulated swaps in this browser (not real, not claimable)</span>
+            )}
             <span className={`mono ${styles.muted}`}>
               {summary.length > 0 ? summary.join(" · ") : "No trades yet"} · valued at live prices
             </span>
@@ -69,7 +82,7 @@ export function BagScreen() {
       </section>
 
       <ul className={styles.stocks}>
-        {values.map(({ ticker, amount, usd }) => (
+        {values.map(({ ticker, amount, usd, simulated }) => (
           <li key={ticker} className={`${styles.stock} ${bag.ticker === ticker ? styles.stockOn : ""}`}>
             <div className={styles.stockHead}>
               <TokenAvatar token={{ symbol: ticker, kind: "stock" }} size={32} />
@@ -80,6 +93,7 @@ export function BagScreen() {
             <span className={`mono ${styles.muted}`}>
               ${formatFixed(usd, 2)} · {formatPrice(prices[ticker] ?? 0)} each
             </span>
+            {simulated > 0 && <span className={`mono ${styles.muted}`}>+{formatFixed(simulated, 6)} simulated</span>}
             {bag.ticker !== ticker && (
               <button type="button" className={styles.switch} onClick={() => bag.setTicker(ticker)}>
                 Collect {ticker} next

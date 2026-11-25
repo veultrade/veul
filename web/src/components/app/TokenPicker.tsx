@@ -10,6 +10,11 @@ import styles from "./TokenPicker.module.css";
 
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 
+// Well-known tokens that are not in the meme or stock lists, found by name and looked up by address like a paste.
+const BY_NAME: Record<string, string> = {
+  usdg: "0x5fc5360d0400a0fd4f2af552add042d716f1d168", // Global Dollar, the chain's main stablecoin
+};
+
 /**
  * Token search in a native <dialog> (focus trap and Esc for free).
  * Search the live lists by name, or paste any contract address to look it up on the chain's DEXes.
@@ -29,25 +34,31 @@ export function TokenPicker({ open, onClose, onPick }: { open: boolean; onClose:
 
   const q = query.trim().toLowerCase();
   const isAddress = ADDRESS.test(q);
-  const known = isAddress ? market.all.find((t) => t.address === q) : undefined;
+  // A typed name of a well-known token ("usd", "usdg") resolves to its address.
+  const named = !isAddress && q.length >= 3 ? Object.entries(BY_NAME).find(([name]) => name.startsWith(q))?.[1] : undefined;
+  const lookupAddress = isAddress ? q : named;
+  const known = lookupAddress ? market.all.find((t) => t.address === lookupAddress) : undefined;
 
-  // A pasted address that is not in our lists is looked up live.
+  // An address (pasted, or from a well-known name) that is not in our lists is looked up live.
   useEffect(() => {
-    if (!isAddress || known) return;
+    if (!lookupAddress || known) return;
     let alive = true;
-    getJson<TokenResponse>(`/api/token/${q}`)
-      .then((body) => alive && setLookup({ address: q, token: body.token, error: null }))
-      .catch((reason: Error) => alive && setLookup({ address: q, token: null, error: reason.message }));
+    getJson<TokenResponse>(`/api/token/${lookupAddress}`)
+      .then((body) => alive && setLookup({ address: lookupAddress, token: body.token, error: null }))
+      .catch((reason: Error) => alive && setLookup({ address: lookupAddress, token: null, error: reason.message }));
     return () => {
       alive = false;
     };
-  }, [q, isAddress, known]);
+  }, [lookupAddress, known]);
 
+  const looked = lookup && lookup.address === lookupAddress ? lookup.token : null;
   const results = useMemo(() => {
     if (!q) return null;
-    if (isAddress) return known ? [known] : lookup?.address === q && lookup.token ? [lookup.token] : [];
-    return market.all.filter((t) => t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q));
-  }, [q, isAddress, known, lookup, market.all]);
+    if (isAddress) return known ? [known] : looked ? [looked] : [];
+    const byName = market.all.filter((t) => t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q));
+    const extra = known ?? looked;
+    return extra && !byName.some((t) => t.address === extra.address) ? [extra, ...byName] : byName;
+  }, [q, isAddress, known, looked, market.all]);
 
   const pick = (token: MarketToken) => {
     onPick(token);
@@ -75,7 +86,7 @@ export function TokenPicker({ open, onClose, onPick }: { open: boolean; onClose:
     </li>
   );
 
-  const searching = isAddress && !known && lookup?.address !== q;
+  const searching = Boolean(lookupAddress) && !known && lookup?.address !== lookupAddress;
 
   return (
     <dialog ref={dialog} className={styles.dialog} onClose={onClose} onClick={(event) => event.target === dialog.current && onClose()} aria-labelledby="picker-title">
@@ -99,7 +110,7 @@ export function TokenPicker({ open, onClose, onPick }: { open: boolean; onClose:
         <div className={styles.list}>
           {results ? (
             searching ? (
-              <p className={styles.empty}>Looking up this address on Robinhood Chain…</p>
+              <p className={styles.empty}>{isAddress ? "Looking up this address on Robinhood Chain…" : "Looking it up on Robinhood Chain…"}</p>
             ) : results.length ? (
               <ul>{results.map(row)}</ul>
             ) : (

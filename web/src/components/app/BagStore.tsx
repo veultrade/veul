@@ -25,10 +25,14 @@ type Bag = {
   verified: WalletLedger | null;
   /** Real swaps sent but not yet in the ledger. */
   pending: string[];
-  /** Stock amounts per ticker: simulated paybacks, plus verified owed paybacks in the chosen stock. */
+  /** Verified paybacks (from the ledger), shown in the chosen stock at its live price. Real money only. */
   totals: Record<PaybackTicker, number>;
-  /** USD value of everything owed: verified (USDG) plus simulated. */
+  /** USD value of the verified paybacks (owed USDG). */
   totalUsd: number;
+  /** Simulated paybacks in this browser, per ticker, kept apart so they are never mistaken for real ones. */
+  simulatedTotals: Record<PaybackTicker, number>;
+  /** USD value of the simulated paybacks at live prices. */
+  simulatedUsd: number;
   record: (trade: { token: string; side: "buy" | "sell"; eth: number; usd: number; stockPriceUsd: number }) => Payback;
   /** Hand a confirmed real swap to the ledger. */
   trackReal: (txHash: string) => void;
@@ -146,17 +150,21 @@ export function BagProvider({ children }: { children: ReactNode }) {
   const prices = market.data?.paybacks;
   const owedUsd = (verified?.totals.owedUsdg ?? 0) / USDG_UNIT;
 
-  const { totals, totalUsd } = useMemo(() => {
-    const sum = Object.fromEntries(PAYBACK_TICKERS.map((t) => [t, 0])) as Record<PaybackTicker, number>;
-    let usd = owedUsd;
+  const { totals, simulatedTotals, simulatedUsd } = useMemo(() => {
+    const empty = () => Object.fromEntries(PAYBACK_TICKERS.map((t) => [t, 0])) as Record<PaybackTicker, number>;
+    const real = empty();
+    const simulated = empty();
+    let simulatedValue = 0;
     for (const p of paybacks) {
-      sum[p.ticker] += p.amount;
-      usd += p.amount * (prices?.[p.ticker] ?? 0);
+      simulated[p.ticker] += p.amount;
+      simulatedValue += p.amount * (prices?.[p.ticker] ?? 0);
     }
+    // Verified paybacks are owed in USDG and paid out in the stock chosen at claim time.
     const price = prices?.[ticker] ?? 0;
-    if (price > 0) sum[ticker] += owedUsd / price;
-    return { totals: sum, totalUsd: usd };
+    if (price > 0) real[ticker] = owedUsd / price;
+    return { totals: real, simulatedTotals: simulated, simulatedUsd: simulatedValue };
   }, [paybacks, prices, ticker, owedUsd]);
+  const totalUsd = owedUsd;
 
   const record = useCallback(
     ({ token, side, eth, usd, stockPriceUsd }: { token: string; side: "buy" | "sell"; eth: number; usd: number; stockPriceUsd: number }) => {
@@ -167,7 +175,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     [ticker],
   );
 
-  return <BagContext.Provider value={{ ticker, setTicker, paybacks, verified, pending, totals, totalUsd, record, trackReal }}>{children}</BagContext.Provider>;
+  return <BagContext.Provider value={{ ticker, setTicker, paybacks, verified, pending, totals, totalUsd, simulatedTotals, simulatedUsd, record, trackReal }}>{children}</BagContext.Provider>;
 }
 
 export function useBag(): Bag {
