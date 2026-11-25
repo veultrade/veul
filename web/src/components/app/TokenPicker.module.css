@@ -33,6 +33,7 @@
 }
 
 .head {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -42,8 +43,9 @@
 .head h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 20px;
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.02em;
 }
 
 .close {
@@ -63,21 +65,31 @@
   background: #1c1c1a;
 }
 
+/* Never shrinks: the panel is a flex column with a capped height, and the list below takes the rest. */
 .search {
-  margin: 0 20px 12px;
+  flex: none;
+  margin: 0 20px 14px;
   height: 46px;
-  padding: 0 14px;
+  padding: 0 14px 0 40px;
   font: inherit;
   font-size: 15px;
   color: var(--text);
-  background: var(--well);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364635f' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='m11 11 3.5 3.5'/%3E%3C/svg%3E") no-repeat 14px 50% / 16px 16px,
+    var(--well);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.search::placeholder {
+  color: var(--faint);
 }
 
 .search:focus {
   outline: none;
   border-color: var(--lav);
+  box-shadow: 0 0 0 3px rgba(58, 160, 219, 0.15);
 }
 
 .list {

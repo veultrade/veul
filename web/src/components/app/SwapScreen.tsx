@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { getJson, type MarketToken, type QuoteResponse, type TokenResponse, type TokenSafety } from "@/lib/market";
 import { FEE_RATE, PAYBACK_RATE, PAYBACK_TICKERS, findIn, formatAmount, formatFixed, formatPrice, formatUsd, paybackUnits } from "@/lib/tokens";
 import { riskCheck } from "@/lib/risk";
@@ -95,7 +95,18 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
   }, [wantedAddress]);
 
   const current = details?.address === wantedAddress ? details : null;
-  const token = current?.token ?? listed ?? (wantedAddress === fallback?.address ? fallback : undefined) ?? null;
+  const fromList = listed ?? (wantedAddress === fallback?.address ? fallback : undefined);
+  // The per-token lookup falls back to the chain when DexScreener is slow; that copy has no volume or 24h change, so
+  // the live list's market numbers (the same source as the list and the chart) win when we have them.
+  const looked = current?.token;
+  // Memoised: a new object each render would restart the quote effect on every render.
+  const token = useMemo(
+    () =>
+      looked && fromList && !(looked.volume24h > 0)
+        ? { ...looked, priceUsd: fromList.priceUsd, change24h: fromList.change24h, volume24h: fromList.volume24h, liquidity: fromList.liquidity || looked.liquidity }
+        : (looked ?? fromList ?? null),
+    [looked, fromList],
+  );
   // GMGN data that came with the list is richer (snipers, bundles, taxes) than the per-token lookup.
   const listedSafety = (listed ?? (wantedAddress === fallback?.address ? fallback : undefined))?.safety;
   const safety = listedSafety?.source === "gmgn" ? listedSafety : (current?.safety ?? listedSafety ?? null);

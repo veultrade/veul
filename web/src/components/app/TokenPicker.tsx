@@ -102,6 +102,7 @@ export function TokenPicker({ open, onClose, onPick }: { open: boolean; onClose:
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search a name or paste an address"
+          autoFocus
           aria-label="Search tokens"
           autoComplete="off"
           spellCheck={false}

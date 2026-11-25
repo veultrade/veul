@@ -116,6 +116,7 @@ export function tokenOnchain(address: string): Promise<MarketToken | null> {
     const bestTiny = tinyValues.indexOf(Math.max(0, ...tinyValues));
     let best: MarketPool | null = unitPrice > 0 && bestTiny >= 0 ? pools[bestTiny] : null;
     let bestValue = 0;
+    let bestIndex = bestTiny;
     if (unitPrice > 0) {
       const size = BigInt(Math.max(1, Math.floor((100 / unitPrice) * Number(unit))));
       const values = await Promise.all(pools.map((pool) => sellValueUsd(pool, token, size)));
@@ -123,9 +124,13 @@ export function tokenOnchain(address: string): Promise<MarketToken | null> {
         if (value > bestValue) {
           bestValue = value;
           best = pools[i];
+          bestIndex = i;
         }
       });
     }
+    // The price is the deepest pool's, not the highest tiny quote: a thin or stale pool can quote a tiny sell far
+    // above the market (seen 2026-11-25: PONS at $0.121 from a side pool while its main pool traded at $0.083).
+    const price = bestIndex >= 0 && tinyValues[bestIndex] > 0 ? tinyValues[bestIndex] * Number(unit / tiny) : unitPrice;
 
     // Rough depth for the risk check: what the quote side of a v3 pool holds.
     let liquidity = 0;
@@ -143,7 +148,7 @@ export function tokenOnchain(address: string): Promise<MarketToken | null> {
       decimals,
       kind: stock ? "stock" : "meme",
       imageUrl: null,
-      priceUsd: unitPrice,
+      priceUsd: price,
       change24h: 0,
       volume24h: 0,
       liquidity,
