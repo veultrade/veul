@@ -6,6 +6,7 @@ import { explorerTx } from "@/lib/swap/client";
 import { USDG_UNIT } from "@/lib/ledger";
 import { useBag } from "./BagStore";
 import styles from "./Screens.module.css";
+import { appPath } from "@/lib/urls";
 
 const time = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const ethOf = (wei: string) => Number(BigInt(wei)) / 1e18;
@@ -33,7 +34,7 @@ export function LedgerScreen() {
       {empty ? (
         <div className={styles.empty}>
           <p>No trades yet. Swaps you make show up here.</p>
-          <Link href="/app" className="btn btn-quiet btn-sm">
+          <Link href={appPath()} className="btn btn-quiet btn-sm">
             Go to swap
           </Link>
         </div>

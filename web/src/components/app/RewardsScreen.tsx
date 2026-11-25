@@ -20,7 +20,7 @@ export function RewardsScreen() {
   const bag = useBag();
   // Short code from the wallet address; the real code is issued by the server with the ledger.
   const code = auth.address ? auth.address.slice(2, 8).toUpperCase() : "";
-  const link = code ? `https://stockup.xyz/r/${code}` : "";
+  const link = code ? `https://veul.trade/r/${code}` : "";
 
   return (
     <div className={screens.page}>

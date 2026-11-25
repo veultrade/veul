@@ -6,7 +6,9 @@
   // veul.trade (bought 2026-11-25, same Cloudflare account). www redirects to the apex in next.config.ts.
   "routes": [
     { "pattern": "veul.trade", "custom_domain": true },
-    { "pattern": "www.veul.trade", "custom_domain": true }
+    { "pattern": "www.veul.trade", "custom_domain": true },
+    // The app's own host; next.config.ts maps its paths onto the /app routes.
+    { "pattern": "app.veul.trade", "custom_domain": true }
   ],
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-11-01",

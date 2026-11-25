@@ -60,7 +60,7 @@ export function WalletScreen() {
     <div className={screens.page}>
       <header className={screens.title}>
         <h1>Wallet</h1>
-        <p>Your Stockup wallet on Robinhood Chain. Fund it with ETH, trade, and withdraw any time. Only you can move funds.</p>
+        <p>Your Veul wallet on Robinhood Chain. Fund it with ETH, trade, and withdraw any time. Only you can move funds.</p>
       </header>
 
       <div className={styles.grid2}>

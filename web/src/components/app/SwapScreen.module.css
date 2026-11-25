@@ -1,30 +1,29 @@
+/*
+  Three columns on wide screens: live markets | the swap card | token details. The card keeps a comfortable
+  width; the side columns take the rest, so a wide screen is used instead of left empty.
+*/
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 460px) minmax(0, 340px);
-  grid-template-areas: "title title" "card info";
-  gap: 24px 28px;
+  grid-template-columns: minmax(260px, 320px) minmax(380px, 460px) minmax(300px, 1fr);
+  grid-template-areas: "rail card info";
+  gap: 16px;
   align-items: start;
-  max-width: 828px;
 }
 
-.title {
-  grid-area: title;
+.layout > section:first-of-type {
+  grid-area: rail;
+  position: sticky;
+  top: 72px;
+  max-height: calc(100dvh - 96px);
 }
 
-.title h1 {
-  margin: 0 0 6px;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 32px;
-  letter-spacing: -0.01em;
-}
-
-.title p {
-  margin: 0;
-  max-width: 560px;
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--muted);
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .card {
@@ -110,8 +109,10 @@
   min-width: 0;
   width: 100%;
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 500;
   font-size: 34px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
   line-height: 1.15;
   color: var(--text);
   background: none;
@@ -197,7 +198,17 @@ button.asset:hover {
 
 .flip:hover {
   color: var(--text);
-  transform: rotate(180deg);
+}
+
+.flip:active {
+  transform: scale(0.92);
+}
+
+/* Each press spins the arrow half a turn (the angle is set inline). */
+.flipIcon {
+  display: grid;
+  place-items: center;
+  transition: transform 0.4s var(--ease);
 }
 
 .pick {
@@ -272,9 +283,10 @@ button.asset:hover {
 
 .go {
   width: 100%;
-  height: 54px;
+  height: 52px;
   margin-top: 8px;
-  font-size: 17px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .note {
@@ -295,6 +307,8 @@ button.asset:hover {
 
 .info {
   grid-area: info;
+  position: sticky;
+  top: 72px;
   display: grid;
   gap: 18px;
   padding: 20px;
@@ -318,8 +332,9 @@ button.asset:hover {
 
 .infoHead strong {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 20px;
+  letter-spacing: -0.02em;
 }
 
 .infoHead :global(.mono) {
@@ -378,10 +393,25 @@ button.asset:hover {
   color: var(--muted);
 }
 
-@media (max-width: 1100px) {
+/* Mid widths: card and details side by side, markets below them. */
+@media (max-width: 1180px) {
   .layout {
-    grid-template-columns: minmax(0, 460px);
-    grid-template-areas: "title" "card" "info";
+    grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+    grid-template-areas: "card info" "rail rail";
+  }
+
+  .layout > section:first-of-type,
+  .info {
+    position: static;
+    max-height: none;
+  }
+}
+
+/* Phones: one column; the market list comes after the card. */
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "card" "info" "rail";
   }
 }
 

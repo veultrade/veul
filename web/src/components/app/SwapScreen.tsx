@@ -13,7 +13,10 @@ import { RiskBadge } from "./RiskBadge";
 import { TokenAvatar } from "./TokenAvatar";
 import { TokenPicker } from "./TokenPicker";
 import { ChevronIcon, FlipIcon } from "./icons";
+import { MarketRail } from "./MarketRail";
+import { Tween } from "./motion";
 import styles from "./SwapScreen.module.css";
+import { appPath } from "@/lib/urls";
 
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 const AMOUNT = /^\d{0,12}(\.\d{0,18})?$/;
@@ -22,7 +25,7 @@ const SLIPPAGES = [50, 100, 300, 500]; // basis points
 
 const STEP_TEXT: Record<SwapStep, string> = {
   preparing: "Checking your balance…",
-  approving: "Approve Stockup's router in your wallet (one time per token)…",
+  approving: "Approve Veul's router in your wallet (one time per token)…",
   "signing-permit": "Sign the permit in your wallet…",
   building: "Building and checking the swap…",
   "confirm-in-wallet": "Confirm the swap in your wallet…",
@@ -56,6 +59,8 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
   const [step, setStep] = useState<SwapStep | null>(null);
   const [swapError, setSwapError] = useState<string | null>(null);
   const [lastTx, setLastTx] = useState<string | null>(null);
+  // Turns of the flip button, so each press spins it half a turn further.
+  const [flips, setFlips] = useState(0);
 
   // May this wallet make real swaps? (Server allowlist and per-trade cap while testing.)
   useEffect(() => {
@@ -71,7 +76,7 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
   }, [auth.address]);
   const realOn = Boolean(real?.enabled && real.account === auth.address && auth.authenticated);
 
-  // Token: what the user picked, else ?token= (address or symbol), else the top trending token Stockup can route.
+  // Token: what the user picked, else ?token= (address or symbol), else the top trending token Veul can route.
   const fromParam = initialToken && !ADDRESS.test(initialToken) ? findIn(market.all, initialToken) : undefined;
   const fallback = market.data?.trending.find((t) => t.pool) ?? market.data?.stocks[0];
   const listed = picked ?? fromParam ?? (initialToken && ADDRESS.test(initialToken) ? market.all.find((t) => t.address === initialToken.toLowerCase()) : undefined);
@@ -179,6 +184,7 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
   // Switching sides carries the received amount over as the new amount to pay.
   const flip = () => {
     setSide((s) => (s === "buy" ? "sell" : "buy"));
+    setFlips((n) => n + 1);
     setAmount(received > 0 ? String(Number(received.toPrecision(6))) : side === "buy" ? "" : "0.05");
     setStatus("idle");
   };
@@ -209,7 +215,7 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
         </a>
         {bag.verified?.entries.some((entry) => entry.txHash === lastTx.toLowerCase()) ? (
           <>
-            . Verified: about {formatAmount(lastPayback)} {bag.ticker} added to your <Link href="/app/bag">stock bag</Link>.
+            . Verified: about {formatAmount(lastPayback)} {bag.ticker} added to your <Link href={appPath("/bag")}>stock bag</Link>.
           </>
         ) : bag.pending.includes(lastTx) ? (
           `. Checking it onchain for your payback of about ${formatAmount(lastPayback)} ${bag.ticker}…`
@@ -221,11 +227,11 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
   } else if (status === "done") {
     note = (
       <>
-        Simulated swap recorded. +{formatAmount(lastPayback)} {bag.ticker} added to your <Link href="/app/bag">stock bag</Link>.
+        Simulated swap recorded. +{formatAmount(lastPayback)} {bag.ticker} added to your <Link href={appPath("/bag")}>stock bag</Link>.
       </>
     );
   } else if (!token) note = market.error ? `Prices could not load: ${market.error}` : "Loading live prices…";
-  else if (!token.pool) note = `${token.symbol} has no Uniswap pool against ETH or USDG, so Stockup cannot route it yet.`;
+  else if (!token.pool) note = `${token.symbol} has no Uniswap pool against ETH or USDG, so Veul cannot route it yet.`;
   else if (!(value > 0)) note = `Enter how much ${side === "buy" ? "ETH" : token.symbol} to ${side}.`;
   else if (live.status === "error") note = live.error;
   else if (overRealCap && real) note = `While testing, one real trade can be at most ${real.maxEth} ETH.`;
@@ -244,10 +250,16 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
 
   return (
     <div className={styles.layout}>
-      <header className={styles.title}>
-        <h1>Swap</h1>
-        <p>Any token on Robinhood Chain, routed through Uniswap. 0.25% of every trade comes back to you as stock.</p>
-      </header>
+      {/* The screen's heading is for screen readers; the top bar already says where you are. */}
+      <h1 className={styles.srOnly}>Swap</h1>
+
+      <MarketRail
+        selected={token?.address ?? null}
+        onPick={(next) => {
+          setPicked(next);
+          setStatus("idle");
+        }}
+      />
 
       <form className={styles.card} onSubmit={submit} aria-label="Swap" noValidate>
         <div className={styles.tabs} role="radiogroup" aria-label="Side">
@@ -285,17 +297,21 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
             />
             {side === "buy" ? ethChip : tokenChip}
           </span>
-          <span className={`mono ${styles.sub}`}>{tradeUsd > 0 ? `≈ $${formatFixed(tradeUsd, 2)}` : `ETH $${formatFixed(ethUsd, 2)}`}</span>
+          <span className={`mono ${styles.sub}`}>
+            {tradeUsd > 0 ? <Tween value={tradeUsd} format={(v) => `≈ $${formatFixed(v, 2)}`} /> : `ETH $${formatFixed(ethUsd, 2)}`}
+          </span>
         </label>
 
         <button type="button" className={styles.flip} onClick={flip} aria-label="Switch buy and sell">
-          <FlipIcon />
+          <span className={styles.flipIcon} style={{ transform: `rotate(${flips * 180}deg)` }}>
+            <FlipIcon />
+          </span>
         </button>
 
         <div className={styles.box}>
           <span className={styles.label}>You receive</span>
           <span className={styles.row}>
-            <span className={`${styles.amount} ${live.status === "loading" ? styles.pending : ""}`}>{received > 0 ? formatAmount(received) : "0"}</span>
+            <Tween value={received} format={(v) => (v > 0 ? formatAmount(v) : "0")} className={`${styles.amount} ${live.status === "loading" ? styles.pending : ""}`} />
             {side === "buy" ? tokenChip : ethChip}
           </span>
           <span className={`mono ${styles.sub}`}>
@@ -343,13 +359,13 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
           <div>
             <dt>Fee</dt>
             <dd className="mono">
-              {FEE_RATE * 100}% · ${formatFixed(tradeUsd * FEE_RATE, 2)}
+              {FEE_RATE * 100}% · <Tween value={tradeUsd * FEE_RATE} format={(v) => `$${formatFixed(v, 2)}`} />
             </dd>
           </div>
           <div className={styles.back}>
             <dt>Back to you as stock</dt>
             <dd className="mono">
-              {formatAmount(payback)} {bag.ticker} · ${formatFixed(tradeUsd * PAYBACK_RATE, 2)}
+              <Tween value={payback} format={formatAmount} /> {bag.ticker} · <Tween value={tradeUsd * PAYBACK_RATE} format={(v) => `$${formatFixed(v, 2)}`} />
             </dd>
           </div>
         </dl>

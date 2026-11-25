@@ -1,144 +1,185 @@
+/* App frame in the landing's look: slim blurred top bar, full-width screens, bottom tabs on phones. */
+
 .frame {
   min-height: 100dvh;
-  display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
   background: var(--bg);
 }
 
-.side {
+.top {
   position: sticky;
   top: 0;
-  height: 100dvh;
+  z-index: 30;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+.topInner {
   display: flex;
-  flex-direction: column;
-  gap: 32px;
-  padding: 24px 16px 20px 20px;
-  border-right: 1px solid var(--line);
-  background: var(--bg-2);
+  align-items: center;
+  gap: 28px;
+  height: 56px;
+  padding: 0 24px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
-.sideNav {
-  display: grid;
-  gap: 4px;
+.topInner > a:first-child {
+  flex: none;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
-.navLink {
+.topNav {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.topNavList {
+  position: relative;
+  display: flex;
+  gap: 2px;
+}
+
+/* The sliding pill behind the active tab. */
+.pill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.pillAnimate {
+  transition: transform 0.35s var(--ease), width 0.35s var(--ease);
+}
+
+.topLink {
+  position: relative;
+  padding: 7px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+
+.topLink:hover,
+.topLinkActive {
+  color: var(--text);
+}
+
+.topEnd {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 400;
-  color: var(--muted);
-  text-decoration: none;
-  transition: background-color 0.2s var(--ease), color 0.2s var(--ease);
-}
-
-.navLink:hover {
-  color: var(--text);
-  background: #171715;
-}
-
-.active,
-.active:hover {
-  color: var(--text);
-  background: #1a1a18;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.active svg {
-  color: var(--lav);
-}
-
-.sideFoot {
-  margin-top: auto;
-  display: grid;
-  gap: 16px;
+  margin-left: auto;
+  flex: none;
 }
 
 .preview {
-  display: grid;
-  gap: 4px;
-  margin: 0;
-  padding: 12px;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--faint);
+  padding: 4px 8px;
+  border-radius: 999px;
   border: 1px dashed var(--line-2);
-  border-radius: 12px;
-}
-
-.preview :global(.mono),
-.preview span {
-  font-size: 11px;
   color: var(--lav);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.top,
-.tabs {
-  display: none;
+  cursor: help;
 }
 
 .main {
   min-width: 0;
-  padding: 40px 48px 64px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
 }
 
-@media (max-width: 860px) {
-  .frame {
-    grid-template-columns: minmax(0, 1fr);
-  }
+/* A short fade-up when a screen opens. */
+.screen {
+  animation: screenIn 0.35s var(--ease);
+}
 
-  .side {
+@keyframes screenIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen {
+    animation: none;
+  }
+}
+
+.tabs {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .topNav,
+  .preview {
     display: none;
   }
 
-  .top {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.86);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line);
+  .topInner {
+    padding: 0 16px;
   }
 
   .main {
-    padding: 24px 16px calc(96px + env(safe-area-inset-bottom));
+    padding: 16px 16px calc(96px + env(safe-area-inset-bottom));
   }
 
   .tabs {
     position: fixed;
-    z-index: 20;
+    z-index: 30;
     left: 0;
     right: 0;
     bottom: 0;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-    background: rgba(12, 12, 11, 0.94);
+    background: color-mix(in srgb, var(--bg-2) 92%, transparent);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid var(--line);
   }
 
-  .tabs .navLink {
+  .tab {
+    display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 4px;
     padding: 8px 4px;
-    font-size: 12px;
-    justify-content: center;
+    border-radius: 10px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s var(--ease), transform 0.15s var(--ease);
   }
 
-  .tabs .active,
-  .tabs .active:hover {
-    background: transparent;
-    box-shadow: none;
+  .tab:active {
+    transform: scale(0.94);
+  }
+
+  .tabActive {
+    color: var(--text);
+  }
+
+  .tabActive svg {
+    color: var(--lav);
   }
 }

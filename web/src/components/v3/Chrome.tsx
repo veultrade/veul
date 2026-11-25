@@ -4,6 +4,7 @@ import { Wordmark } from "@/components/site/Wordmark";
 import { Halftone } from "./Halftone";
 import { MEDIA } from "./media";
 import styles from "./V3Landing.module.css";
+import { appUrl } from "@/lib/urls";
 
 /**
  * The site's shared frame in the v3 look: tokens, the fixed header and the footer with the halftone dunes.
@@ -13,10 +14,10 @@ import styles from "./V3Landing.module.css";
 
 // Footer link columns, laid out like datavendor's (four even columns, title then links).
 const FOOTER_COLUMNS = [
-  { title: "Product", links: [{ href: "/app", label: "Swap" }, { href: "/app/bag", label: "Stock bag" }, { href: "/app/ledger", label: "Ledger" }, { href: "/app/rewards", label: "Rewards" }] },
+  { title: "Product", links: [{ href: appUrl(), label: "Swap" }, { href: appUrl("/bag"), label: "Stock bag" }, { href: appUrl("/ledger"), label: "Ledger" }, { href: appUrl("/rewards"), label: "Rewards" }] },
   { title: "Learn", links: [{ href: "/#how", label: "How it works" }, { href: "/#stocks", label: "Stocks" }, { href: "/#estimate", label: "Estimate" }, { href: "/#faq", label: "FAQ" }] },
   { title: "Legal", links: [{ href: "/terms", label: "Terms of use" }, { href: "/privacy", label: "Privacy" }] },
-  { title: "Get started", links: [{ href: "/app", label: "Go to app" }, { href: "/app/discover", label: "Discover tokens" }] },
+  { title: "Get started", links: [{ href: appUrl(), label: "Go to app" }, { href: appUrl("/discover"), label: "Discover tokens" }] },
 ];
 
 function Arrow() {
@@ -48,7 +49,7 @@ function Header() {
           <Link href="/#estimate">Estimate</Link>
           <Link href="/#faq">FAQ</Link>
         </nav>
-        <Link href="/app" className={`${styles.button} ${styles.buttonLight} ${styles.headerButton}`}>
+        <Link href={appUrl()} className={`${styles.button} ${styles.buttonLight} ${styles.headerButton}`}>
           Go to app
         </Link>
       </div>

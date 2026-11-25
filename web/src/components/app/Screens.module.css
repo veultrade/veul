@@ -1,22 +1,29 @@
 /* Shared styles for the Stock bag and Ledger screens. */
 .page {
   display: grid;
-  gap: 24px;
-  max-width: 920px;
+  gap: 16px;
+}
+
+/* One line: the screen name, then what it is for, in quiet type. */
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 4px 2px 0;
 }
 
 .title h1 {
-  margin: 0 0 6px;
+  margin: 0;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 32px;
-  letter-spacing: -0.04em;
+  font-size: 24px;
+  letter-spacing: -0.035em;
 }
 
 .title p {
   margin: 0;
-  max-width: 560px;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--muted);
 }
@@ -26,23 +33,41 @@
   color: var(--faint);
 }
 
+/* Bag total: the facts on the left, the amount drawn as blue halftone dots on the right (as on the landing). */
 .hero {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 1.6fr);
+  align-items: stretch;
   gap: 24px;
-  padding: 28px;
-  border-radius: 24px;
-  background:
-    radial-gradient(120% 140% at 0% 0%, rgba(58, 160, 219, 0.12), transparent 55%),
-    var(--panel);
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--panel);
   border: 1px solid var(--line-2);
 }
 
-.hero > div {
+.hero > div:first-child {
+  display: grid;
+  align-content: space-between;
+  gap: 20px;
+}
+
+.heroFacts {
   display: grid;
   gap: 6px;
+}
+
+.heroDots {
+  min-height: 180px;
+  border-radius: 12px;
+  background-image: radial-gradient(circle, rgba(247, 246, 243, 0.1) 1px, transparent 1.4px);
+  background-size: 10px 10px;
+  background-position: center;
+  color: var(--lav);
+}
+
+/* The halftone canvas sets its own colour; keep it the accent blue here. */
+.heroDots .heroDotsInner {
+  color: var(--lav);
 }
 
 .kicker {
@@ -54,14 +79,16 @@
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.045em;
-  font-size: clamp(40px, 6vw, 60px);
+  font-size: 44px;
   line-height: 1.05;
-  color: var(--gold);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
 
 .claim {
-  justify-items: end;
-  text-align: right;
+  display: grid;
+  justify-items: start;
+  gap: 8px;
 }
 
 .stocks {
@@ -77,18 +104,27 @@
   display: grid;
   align-content: start;
   gap: 6px;
-  padding: 18px;
-  border-radius: 18px;
+  padding: 16px;
+  border-radius: 14px;
   background: var(--bg-2);
   border: 1px solid var(--line);
+  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease), background-color 0.2s var(--ease);
 }
 
-.stockOn {
-  border-color: rgba(58, 160, 219, 0.45);
+.stock:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-2);
+  background: var(--panel);
+}
+
+.stockOn,
+.stockOn:hover {
+  border-color: rgba(58, 160, 219, 0.55);
 }
 
 .stockHead {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   margin-bottom: 8px;
@@ -134,8 +170,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 24px;
-  border-radius: 18px;
+  padding: 16px 20px;
+  border-radius: 14px;
   border: 1px dashed var(--line-2);
 }
 
@@ -146,7 +182,7 @@
 }
 
 .tableWrap {
-  border-radius: 18px;
+  border-radius: 14px;
   border: 1px solid var(--line);
   background: var(--bg-2);
   overflow: hidden;
@@ -269,4 +305,14 @@
   border-style: solid;
   border-color: var(--up);
   text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .heroDots {
+    min-height: 120px;
+  }
 }

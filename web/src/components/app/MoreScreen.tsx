@@ -2,11 +2,12 @@ import Link from "next/link";
 import { AgentIcon, GiftIcon, LedgerIcon } from "./icons";
 import screens from "./Screens.module.css";
 import styles from "./Features.module.css";
+import { appPath, siteUrl } from "@/lib/urls";
 
 const ITEMS = [
-  { href: "/app/ledger", label: "Ledger", note: "Every fee and payback, line by line", Icon: LedgerIcon },
-  { href: "/app/rewards", label: "Rewards", note: "Invite friends, earn stock from their trades", Icon: GiftIcon },
-  { href: "/app/agents", label: "Agents", note: "Let an AI agent trade for you", Icon: AgentIcon },
+  { href: "/ledger", label: "Ledger", note: "Every fee and payback, line by line", Icon: LedgerIcon },
+  { href: "/rewards", label: "Rewards", note: "Invite friends, earn stock from their trades", Icon: GiftIcon },
+  { href: "/agents", label: "Agents", note: "Let an AI agent trade for you", Icon: AgentIcon },
 ];
 
 /** Phone-only menu for the pages that do not fit in the bottom tabs. */
@@ -19,7 +20,7 @@ export function MoreScreen() {
       <ul className={styles.moreList}>
         {ITEMS.map(({ href, label, note, Icon }) => (
           <li key={href}>
-            <Link href={href}>
+            <Link href={appPath(href)}>
               <Icon />
               <span>
                 {label}
@@ -29,9 +30,9 @@ export function MoreScreen() {
           </li>
         ))}
         <li>
-          <Link href="/">
+          <Link href={siteUrl()}>
             <span>
-              Stockup home
+              Veul home
               <small>Back to the website</small>
             </span>
           </Link>

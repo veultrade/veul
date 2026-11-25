@@ -1,0 +1,50 @@
+/* Price flash: a short tint behind the number, fading out. */
+.up,
+.down {
+  border-radius: 4px;
+  animation: flash 0.9s var(--ease);
+}
+
+.up {
+  --flash: rgba(87, 211, 140, 0.28);
+}
+
+.down {
+  --flash: rgba(255, 138, 138, 0.28);
+}
+
+@keyframes flash {
+  from {
+    background-color: var(--flash);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+/* Loading placeholder: a light band sweeping across. */
+.skeleton {
+  display: inline-block;
+  vertical-align: middle;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--panel) 0%, #262624 50%, var(--panel) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .up,
+  .down,
+  .skeleton {
+    animation: none;
+  }
+}

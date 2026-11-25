@@ -12,10 +12,10 @@ import styles from "./Features.module.css";
 // Package name and key format are placeholders until the API exists.
 const MCP_CONFIG = `{
   "mcpServers": {
-    "stockup": {
+    "veul": {
       "command": "npx",
-      "args": ["-y", "@stockup/mcp"],
-      "env": { "STOCKUP_API_KEY": "sk_live_..." }
+      "args": ["-y", "@veul/mcp"],
+      "env": { "VEUL_API_KEY": "sk_live_..." }
     }
   }
 }`;
@@ -71,7 +71,7 @@ export function AgentsScreen() {
     <div className={screens.page}>
       <header className={screens.title}>
         <h1>Agents</h1>
-        <p>Let an AI agent trade for you, through Stockup. Every agent trade still pays you back in stock.</p>
+        <p>Let an AI agent trade for you, through Veul. Every agent trade still pays you back in stock.</p>
       </header>
 
       <section className={styles.panel} aria-labelledby="chat-title">
@@ -133,7 +133,7 @@ export function AgentsScreen() {
             <h2 id="mcp-title">Connect your AI agent</h2>
             <span className={`mono ${styles.tag}`}>Coming soon</span>
           </div>
-          <p>Add Stockup to Claude, Cursor or any MCP client. Your agent can quote, check risk and swap on Robinhood Chain; the paybacks land in your stock bag.</p>
+          <p>Add Veul to Claude, Cursor or any MCP client. Your agent can quote, check risk and swap on Robinhood Chain; the paybacks land in your stock bag.</p>
           <pre className={styles.code}>{MCP_CONFIG}</pre>
           <div className={styles.chips}>
             {TOOLS.map((tool) => (
@@ -150,7 +150,7 @@ export function AgentsScreen() {
             <h2 id="api-title">API keys</h2>
             <span className={`mono ${styles.tag}`}>Coming soon</span>
           </div>
-          <p>For bots and scripts. Each key has its own spending limit per day and can only trade from your Stockup wallet. You can revoke a key any time.</p>
+          <p>For bots and scripts. Each key has its own spending limit per day and can only trade from your Veul wallet. You can revoke a key any time.</p>
           <ul className={styles.list}>
             <li>
               <span className={styles.grow}>

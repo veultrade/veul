@@ -1,3 +1,4 @@
+import { appUrl } from "@/lib/urls";
 import { Button, V3Shell } from "./Chrome";
 import { DotField } from "./DotField";
 import { EarnTabs } from "./EarnTabs";
@@ -43,7 +44,7 @@ export function V3Landing() {
               <strong> NVDA, SPY</strong> or the stock you pick.
             </p>
             <div className={styles.heroActions}>
-              <Button href="/app">Go to app</Button>
+              <Button href={appUrl()}>Go to app</Button>
               <Button href="#how" tone="dark">
                 See how it works
               </Button>
@@ -64,7 +65,7 @@ export function V3Landing() {
             <div className={styles.splitCopy}>
               <h2 className={styles.splitTitle}>Veul is the swap that pays you back.</h2>
               <div className={styles.actions}>
-                <Button href="/app">Start swapping</Button>
+                <Button href={appUrl()}>Start swapping</Button>
                 <Button href="#stocks" tone="dark">
                   See the stocks
                 </Button>
@@ -80,7 +81,7 @@ export function V3Landing() {
               <h2 className={styles.blockTitle}>What you get back</h2>
               <div className={styles.blockAside}>
                 <p>Real stock tokens on Robinhood Chain, priced onchain. Pick the one you want to own.</p>
-                <Button href="/app/bag" tone="dark">
+                <Button href={appUrl("/bag")} tone="dark">
                   Open your stock bag
                 </Button>
               </div>
@@ -101,7 +102,7 @@ export function V3Landing() {
           <section className={styles.block} id="how">
             <div className={styles.stepsHead}>
               <h2 className={styles.blockTitle}>How it works</h2>
-              <Button href="/app" tone="dark">
+              <Button href={appUrl()} tone="dark">
                 Start swapping
               </Button>
             </div>
@@ -115,7 +116,7 @@ export function V3Landing() {
               Keep the stocks.
             </h2>
             <div className={styles.actionsCenter}>
-              <Button href="/app">Go to app</Button>
+              <Button href={appUrl()}>Go to app</Button>
               <Button href="#faq" tone="dark">
                 Read the FAQ
               </Button>

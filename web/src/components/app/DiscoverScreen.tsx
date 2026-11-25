@@ -10,6 +10,7 @@ import { RiskBadge } from "./RiskBadge";
 import { TokenAvatar } from "./TokenAvatar";
 import screens from "./Screens.module.css";
 import styles from "./Features.module.css";
+import { appPath } from "@/lib/urls";
 
 const VIEWS = { trending: "Trending memes", stocks: "Stock tokens", fresh: "New pools" } as const;
 type View = keyof typeof VIEWS;
@@ -19,7 +20,7 @@ export function DiscoverScreen() {
   const router = useRouter();
   const market = useMarket();
   const [view, setView] = useState<View>("trending");
-  const href = (token: MarketToken) => `/app?token=${token.address}`;
+  const href = (token: MarketToken) => `${appPath()}?token=${token.address}`;
   const list = market.data?.[view] ?? [];
 
   return (
@@ -127,7 +128,7 @@ export function DiscoverScreen() {
       )}
       <p className={screens.muted}>
         {market.data ? `Live, updated ${new Date(market.data.updatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}. ` : ""}
-        Risk here checks liquidity, pool age and whether Stockup can route the token; open a token for holders, dev share and the honeypot check. Not advice.
+        Risk here checks liquidity, pool age and whether Veul can route the token; open a token for holders, dev share and the honeypot check. Not advice.
       </p>
     </div>
   );
