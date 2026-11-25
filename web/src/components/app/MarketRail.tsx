@@ -17,39 +17,41 @@ const LISTS = [
 type ListKey = (typeof LISTS)[number]["key"];
 
 /**
- * The swap screen's left column: a compact live market list. Picking a row loads that token into the swap card,
- * so the wide screen's left side is useful instead of empty. Tokens without a Uniswap pool are listed dimmed;
- * the swap card explains that they cannot be traded yet.
+ * The trade screen's left column: a dense live market list with a filter. Picking a row loads that token into the
+ * chart and the trade panel. Tokens without a Uniswap pool are dimmed (the panel explains they cannot be traded).
  */
 export function MarketRail({ selected, onPick }: { selected: string | null; onPick: (token: MarketToken) => void }) {
   const market = useMarket();
   const [chosen, setList] = useState<ListKey | null>(null);
+  const [filter, setFilter] = useState("");
   // Until the trader picks a list, show Trending, or Stocks when Trending is empty (its source can pause).
   const list: ListKey = chosen ?? (market.data && market.data.trending.length === 0 ? "stocks" : "trending");
-  const tokens = (market.data?.[list] ?? []).slice(0, 16);
+  const q = filter.trim().toLowerCase();
+  const tokens = (market.data?.[list] ?? []).filter((t) => !q || t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q)).slice(0, 40);
 
   return (
     <section className={styles.rail} aria-label="Markets">
-      <div className={styles.tabs} role="tablist" aria-label="Market lists">
-        {LISTS.map((option) => (
-          <button
-            key={option.key}
-            type="button"
-            role="tab"
-            aria-selected={list === option.key}
-            className={`${styles.tab} ${list === option.key ? styles.tabOn : ""}`}
-            onClick={() => setList(option.key)}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div className={styles.head}>
+        <div className={styles.tabs} role="tablist" aria-label="Market lists">
+          {LISTS.map((option) => (
+            <button key={option.key} type="button" role="tab" aria-selected={list === option.key} className={list === option.key ? styles.tabOn : ""} onClick={() => setList(option.key)}>
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <input className={styles.filter} value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="Filter" aria-label="Filter this list" spellCheck={false} />
+      </div>
+      <div className={styles.cols} aria-hidden="true">
+        <span>Token · volume</span>
+        <span>Price</span>
+        <span>24h</span>
       </div>
 
       <ul className={styles.rows}>
         {!market.data &&
-          Array.from({ length: 8 }, (_, index) => (
+          Array.from({ length: 10 }, (_, index) => (
             <li key={index} className={styles.skeletonRow}>
-              <Skeleton width={28} height={28} />
+              <Skeleton width={24} height={24} />
               <Skeleton width="45%" />
               <Skeleton width="25%" />
             </li>
@@ -59,25 +61,28 @@ export function MarketRail({ selected, onPick }: { selected: string | null; onPi
           return (
             <li key={token.address}>
               <button type="button" className={`${styles.row} ${active ? styles.rowOn : ""} ${token.pool ? "" : styles.rowDim}`} onClick={() => onPick(token)} aria-pressed={active}>
-                <TokenAvatar token={token} size={28} />
                 <span className={styles.name}>
-                  <strong>{token.symbol}</strong>
-                  <span className="mono">{formatUsd(token.volume24h)} vol</span>
-                </span>
-                <span className={styles.price}>
-                  <Flash value={token.priceUsd} className="mono">
-                    {formatPrice(token.priceUsd)}
-                  </Flash>
-                  <span className={`mono ${token.change24h >= 0 ? styles.up : styles.down}`}>
-                    {token.change24h >= 0 ? "+" : ""}
-                    {token.change24h.toFixed(1)}%
+                  <TokenAvatar token={token} size={24} />
+                  <span>
+                    <strong>
+                      {token.symbol}
+                      {token.kind === "stock" && <em className={styles.stock}>Stock</em>}
+                    </strong>
+                    <span className="mono">{formatUsd(token.volume24h)}</span>
                   </span>
+                </span>
+                <Flash value={token.priceUsd} className={`mono ${styles.price}`}>
+                  {formatPrice(token.priceUsd)}
+                </Flash>
+                <span className={`mono ${styles.change} ${token.change24h >= 0 ? styles.up : styles.down}`}>
+                  {token.change24h >= 0 ? "+" : ""}
+                  {Math.abs(token.change24h) >= 100 ? Math.round(token.change24h) : token.change24h.toFixed(1)}%
                 </span>
               </button>
             </li>
           );
         })}
-        {market.data && tokens.length === 0 && <li className={styles.empty}>Nothing in this list right now.</li>}
+        {market.data && tokens.length === 0 && <li className={styles.empty}>{q ? "Nothing matches that filter." : "Nothing in this list right now."}</li>}
       </ul>
     </section>
   );

@@ -1,20 +1,18 @@
 /*
-  Three columns on wide screens: live markets | the swap card | token details. The card keeps a comfortable
-  width; the side columns take the rest, so a wide screen is used instead of left empty.
+  Trade screen, chart first (after Axiom / Hyperliquid, 2026-11-25): three columns edge to edge under the top bar,
+  divided by hairlines instead of floating cards. Left: markets. Centre: token facts, chart, tabs. Right: trade panel.
+  Each column scrolls on its own; the page itself does not scroll on desktop.
 */
-.layout {
+.terminal {
   display: grid;
-  grid-template-columns: minmax(260px, 320px) minmax(380px, 460px) minmax(300px, 1fr);
-  grid-template-areas: "rail card info";
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: 280px minmax(0, 1fr) 340px;
+  grid-template-areas: "rail center side";
+  height: calc(100dvh - 56px);
+  min-height: 560px;
 }
 
-.layout > section:first-of-type {
+.terminal > section:first-of-type {
   grid-area: rail;
-  position: sticky;
-  top: 72px;
-  max-height: calc(100dvh - 96px);
 }
 
 .srOnly {
@@ -26,104 +24,236 @@
   white-space: nowrap;
 }
 
-.card {
-  grid-area: card;
-  position: relative;
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border-radius: 16px;
-  background: var(--panel);
-  border: 1px solid var(--line-2);
+/* ---------- Centre ---------- */
+.center {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
 }
 
-.tabs {
+.tokenBar {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 4px;
+  gap: 20px;
+  min-height: 62px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.tab {
-  font: inherit;
-  font-size: 15px;
-  font-weight: 400;
-  color: var(--muted);
-  background: none;
+.tokenId {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 4px 8px 4px 4px;
+  margin-left: -4px;
   border: 0;
-  padding: 8px 14px;
-  border-radius: 12px;
+  border-radius: 10px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
+  transition: background-color 0.15s var(--ease);
 }
 
-.tab:hover {
-  color: var(--text);
+.tokenId:hover {
+  background: #141413;
 }
 
-.tabOn {
-  color: var(--text);
-  background: #1f1f1d;
+.tokenId > span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tokenId strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.tokenId :global(.mono) {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.stockTag {
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--lav);
+  background: rgba(58, 160, 219, 0.14);
+}
+
+.chev {
+  width: 14px;
+  height: 14px;
+  color: var(--faint);
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.price > span:first-child {
+  padding: 0 3px;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.price > span:last-child {
+  font-size: 12px;
+}
+
+.facts {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+}
+
+.facts div {
+  display: grid;
+  gap: 1px;
+}
+
+.facts dt {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.facts dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tokenBar > :last-child:not(.facts) {
+  margin-left: auto;
+  flex: none;
+}
+
+.loadingBar {
+  color: var(--muted);
+}
+
+.up {
+  color: var(--up);
+}
+
+.down {
+  color: var(--down);
+}
+
+/* ---------- Right: trade panel ---------- */
+.side {
+  grid-area: side;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.trade {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.sideBtn {
+  padding: 9px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.sideBuy.sideOn {
+  color: var(--up);
+  background: rgba(87, 211, 140, 0.13);
+}
+
+.sideSell.sideOn {
+  color: var(--down);
+  background: rgba(255, 138, 138, 0.13);
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .tag {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--faint);
+  padding: 2px 7px;
+  border-radius: 5px;
   border: 1px dashed var(--line-2);
-  padding: 2px 8px;
-  border-radius: 6px;
+  font-size: 10.5px;
+  color: var(--faint);
 }
 
-.box {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border-radius: 16px;
-  background: var(--well);
-  border: 1px solid var(--line);
-  transition: border-color 0.3s var(--ease);
+.tagReal {
+  color: var(--up);
+  border: 1px solid rgba(87, 211, 140, 0.5);
 }
 
-.box > * {
-  min-width: 0;
-}
-
-.box:focus-within {
-  border-color: var(--lav);
-}
-
-.label {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.row {
+.amountBox {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
+  gap: 10px;
+  height: 54px;
+  padding: 0 8px 0 14px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line-2);
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.amountBox:focus-within {
+  border-color: var(--lav);
+  box-shadow: 0 0 0 3px rgba(58, 160, 219, 0.15);
 }
 
 .amount {
   flex: 1;
-  min-width: 0;
   width: 100%;
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 34px;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.15;
-  color: var(--text);
-  background: none;
+  min-width: 0;
   border: 0;
-  padding: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.amount:focus {
+  background: none;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   outline: none;
 }
 
@@ -135,16 +265,16 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   max-width: 55%;
-  padding: 6px 12px 6px 6px;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-  background: #1c1c1a;
-  border: 1px solid #2b2b28;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid var(--line-2);
   border-radius: 999px;
+  background: #1a1a18;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -155,116 +285,175 @@
 
 button.asset {
   cursor: pointer;
-  transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease);
+  transition: background-color 0.15s var(--ease);
 }
 
 button.asset:hover {
-  background: #252523;
+  background: #232321;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.presets button,
+.slippage button {
+  padding: 6px 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.1s var(--ease);
+}
+
+.presets button:hover,
+.slippage button:hover {
+  color: var(--text);
   border-color: var(--line-2);
 }
 
-.chev {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  color: var(--muted);
+.presets button:active,
+.slippage button:active {
+  transform: scale(0.96);
+}
+
+.presetOn,
+.presetOn:hover {
+  color: var(--text) !important;
+  border-color: var(--lav) !important;
+  background: rgba(58, 160, 219, 0.12) !important;
 }
 
 .sub {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--faint);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-/* Sits over the gap between the two boxes, like Uniswap's switch. */
-.flip {
-  justify-self: center;
-  position: relative;
-  z-index: 1;
+.receive {
   display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  margin: -20px 0;
-  color: var(--muted);
-  background: #191917;
-  border: 4px solid var(--panel);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: color 0.2s var(--ease), transform 0.3s var(--ease);
-}
-
-.flip:hover {
-  color: var(--text);
-}
-
-.flip:active {
-  transform: scale(0.92);
-}
-
-/* Each press spins the arrow half a turn (the angle is set inline). */
-.flipIcon {
-  display: grid;
-  place-items: center;
-  transition: transform 0.4s var(--ease);
-}
-
-.pick {
-  margin: 8px 0 0;
-  padding: 0 4px;
-  border: 0;
-  min-width: 0;
-}
-
-.pick legend {
-  padding: 0;
-  margin-bottom: 8px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.chips {
-  display: flex;
   gap: 6px;
-  flex-wrap: wrap;
-}
-
-.chip {
-  font: inherit;
-  font-size: 13px;
-  color: var(--muted);
-  background: transparent;
-  border: 1px solid var(--line-2);
+  padding: 10px 12px;
   border-radius: 10px;
-  padding: 7px 14px;
-  cursor: pointer;
-  transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background-color 0.2s var(--ease);
+  background: var(--well);
+  border: 1px dashed var(--line-2);
 }
 
-.chip:hover {
+.receive > span:first-child {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.receiveValue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.receiveValue > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+/* Quote in flight: keep the old number but fade it. */
+.pending {
+  opacity: 0.45;
+  transition: opacity 0.2s var(--ease);
+}
+
+.payback {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(58, 160, 219, 0.13), rgba(58, 160, 219, 0.02));
+  border: 1px solid rgba(58, 160, 219, 0.28);
+}
+
+.paybackTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.paybackTop :global(.mono) {
+  color: var(--lav);
+  font-weight: 500;
+}
+
+.stocks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.stocks button {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 7px 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.stocks button :global(.mono) {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.stocks button:hover {
   color: var(--text);
 }
 
-.chipOn,
-.chipOn:hover {
-  color: var(--gold);
-  border-color: var(--gold);
-  background: rgba(58, 160, 219, 0.08);
+.stockOn,
+.stockOn:hover {
+  color: var(--text) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border-color: var(--lav) !important;
+}
+
+.slippage {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.slippage div {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
 }
 
 .lines {
-  margin: 8px 4px 0;
   display: grid;
-  gap: 8px;
-  font-size: 13px;
+  gap: 6px;
+  margin: 2px 2px 0;
+  font-size: 12px;
 }
 
 .lines div {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .lines dt {
@@ -276,211 +465,111 @@ button.asset:hover {
   text-align: right;
 }
 
-.back dt,
-.back dd {
-  color: var(--gold);
+.back {
+  color: var(--lav);
 }
 
 .go {
-  width: 100%;
-  height: 52px;
-  margin-top: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  height: 48px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s var(--ease), transform 0.1s var(--ease), opacity 0.15s var(--ease);
+}
+
+.go:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.go:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.go:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.goBuy {
+  color: #04150c;
+  background: #2fc27a;
+}
+
+.goSell {
+  color: #1c0407;
+  background: #ef5a67;
+}
+
+.goNeutral {
+  color: #000;
+  background: var(--text);
 }
 
 .note {
-  margin: 2px 4px 0;
+  margin: 0 2px;
   min-height: 18px;
-  font-size: 12px;
+  font-size: 11.5px;
   line-height: 1.5;
   color: var(--faint);
-}
-
-.done {
-  color: var(--gold);
-}
-
-.done a {
-  color: inherit;
-}
-
-.info {
-  grid-area: info;
-  position: sticky;
-  top: 72px;
-  display: grid;
-  gap: 18px;
-  padding: 20px;
-  border-radius: 20px;
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-}
-
-.infoHead {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.infoHead div {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-
-.infoHead strong {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 20px;
-  letter-spacing: -0.02em;
-}
-
-.infoHead :global(.mono) {
-  font-size: 11px;
-  color: var(--faint);
-}
-
-.stats {
-  margin: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 12px;
-}
-
-.stats div {
-  display: grid;
-  gap: 2px;
-}
-
-.stats dt {
-  font-size: 12px;
-  color: var(--faint);
-}
-
-.stats dd {
-  margin: 0;
-  font-size: 15px;
-}
-
-.up {
-  color: var(--up);
-}
-
-.down {
-  color: var(--down);
-}
-
-.stockNote {
-  display: grid;
-  gap: 6px;
-  padding: 14px;
-  border-radius: 14px;
-  background: rgba(58, 160, 219, 0.06);
-  border: 1px solid rgba(58, 160, 219, 0.22);
-}
-
-.stockNote :global(.mono) {
-  font-size: 12px;
-  color: var(--gold);
-}
-
-.stockNote p {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--muted);
-}
-
-/* Mid widths: card and details side by side, markets below them. */
-@media (max-width: 1180px) {
-  .layout {
-    grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
-    grid-template-areas: "card info" "rail rail";
-  }
-
-  .layout > section:first-of-type,
-  .info {
-    position: static;
-    max-height: none;
-  }
-}
-
-/* Phones: one column; the market list comes after the card. */
-@media (max-width: 760px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "card" "info" "rail";
-  }
-}
-
-.riskBox {
-  display: grid;
-  gap: 10px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-}
-
-.riskHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.riskBox p {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text);
-}
-
-.riskBox ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.riskBox li {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--well);
-  border: 1px solid var(--line);
-  color: var(--muted);
-}
-
-.riskBox li.medium {
-  color: var(--gold);
-}
-
-.riskBox li.high {
-  color: var(--down);
-}
-
-.riskBox li.low {
-  color: var(--muted);
-}
-
-/* Quote in flight: keep the old number but fade it. */
-.pending {
-  opacity: 0.45;
-  transition: opacity 0.2s var(--ease);
-}
-
-/* Real swaps are marked so they are never mistaken for the simulation. */
-.tagReal {
-  color: var(--up);
-  border-color: var(--up);
-  border-style: solid;
 }
 
 .note a {
   color: var(--lav);
+}
+
+.done {
+  color: var(--lav);
+}
+
+/* ---------- Narrower screens ---------- */
+@media (max-width: 1180px) {
+  .terminal {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-areas: "center side" "rail rail";
+    height: auto;
+  }
+
+  .center {
+    border-left: 0;
+    min-height: 640px;
+  }
+
+  .terminal > section:first-of-type {
+    max-height: 480px;
+    border-top: 1px solid var(--line);
+  }
+
+  .facts div:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .terminal {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "center" "side" "rail";
+  }
+
+  .center {
+    border-right: 0;
+    min-height: 0;
+  }
+
+  .center > :nth-child(2) {
+    height: 320px;
+    flex: none;
+  }
+
+  .facts {
+    display: none;
+  }
+
+  .side {
+    overflow: visible;
+    border-top: 1px solid var(--line);
+  }
 }

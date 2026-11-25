@@ -12,9 +12,11 @@ import { useMarket } from "./MarketProvider";
 import { RiskBadge } from "./RiskBadge";
 import { TokenAvatar } from "./TokenAvatar";
 import { TokenPicker } from "./TokenPicker";
-import { ChevronIcon, FlipIcon } from "./icons";
+import { ChevronIcon } from "./icons";
 import { MarketRail } from "./MarketRail";
-import { Tween } from "./motion";
+import { Flash, Tween } from "./motion";
+import { PriceChart } from "./PriceChart";
+import { TokenTabs } from "./TokenTabs";
 import styles from "./SwapScreen.module.css";
 import { appPath } from "@/lib/urls";
 
@@ -59,8 +61,6 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
   const [step, setStep] = useState<SwapStep | null>(null);
   const [swapError, setSwapError] = useState<string | null>(null);
   const [lastTx, setLastTx] = useState<string | null>(null);
-  // Turns of the flip button, so each press spins it half a turn further.
-  const [flips, setFlips] = useState(0);
 
   // May this wallet make real swaps? (Server allowlist and per-trade cap while testing.)
   useEffect(() => {
@@ -184,7 +184,6 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
   // Switching sides carries the received amount over as the new amount to pay.
   const flip = () => {
     setSide((s) => (s === "buy" ? "sell" : "buy"));
-    setFlips((n) => n + 1);
     setAmount(received > 0 ? String(Number(received.toPrecision(6))) : side === "buy" ? "" : "0.05");
     setStatus("idle");
   };
@@ -248,10 +247,13 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
   else if (!sizeOk && value > 0) button = `Max ${MAX_ETH} ETH per trade`;
   else if (overRealCap && real) button = `Max ${real.maxEth} ETH while testing`;
 
+  const prices = market.data?.paybacks ?? {};
+  const buying = side === "buy";
+
   return (
-    <div className={styles.layout}>
+    <div className={styles.terminal}>
       {/* The screen's heading is for screen readers; the top bar already says where you are. */}
-      <h1 className={styles.srOnly}>Swap</h1>
+      <h1 className={styles.srOnly}>Trade</h1>
 
       <MarketRail
         selected={token?.address ?? null}
@@ -261,28 +263,86 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
         }}
       />
 
-      <form className={styles.card} onSubmit={submit} aria-label="Swap" noValidate>
-        <div className={styles.tabs} role="radiogroup" aria-label="Side">
-          {(["buy", "sell"] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              role="radio"
-              aria-checked={side === option}
-              className={`${styles.tab} ${side === option ? styles.tabOn : ""}`}
-              onClick={() => side !== option && flip()}
-            >
-              {option === "buy" ? "Buy" : "Sell"}
-            </button>
-          ))}
-          <span className={`mono ${styles.tag} ${realOn ? styles.tagReal : ""}`}>{realOn ? "Real swap" : "Simulated"}</span>
+      {/* Centre: the token's facts, its chart, then trades / risk / your trades. */}
+      <section className={styles.center} aria-label="Token">
+        <div className={styles.tokenBar}>
+          {token ? (
+            <>
+              <button type="button" className={styles.tokenId} onClick={() => setPicker(true)} aria-label={`Change token, now ${token.symbol}`}>
+                <TokenAvatar token={token} size={34} />
+                <span>
+                  <strong>
+                    {token.symbol}
+                    {token.kind === "stock" && <em className={styles.stockTag}>Stock</em>}
+                  </strong>
+                  <span className="mono">{token.pool ? `${token.symbol} / ${token.pool.quoteSymbol} · ${token.pool.version}` : "No Uniswap pool"}</span>
+                </span>
+                <ChevronIcon className={styles.chev} />
+              </button>
+              <div className={styles.price}>
+                <Flash value={token.priceUsd} className="mono">
+                  {formatPrice(token.priceUsd)}
+                </Flash>
+                <span className={`mono ${token.change24h >= 0 ? styles.up : styles.down}`}>
+                  {token.change24h >= 0 ? "+" : ""}
+                  {token.change24h.toFixed(2)}%
+                </span>
+              </div>
+              <dl className={styles.facts}>
+                <div>
+                  <dt>Liquidity</dt>
+                  <dd className="mono">{token.liquidity > 0 ? formatUsd(token.liquidity) : "–"}</dd>
+                </div>
+                <div>
+                  <dt>Volume 24h</dt>
+                  <dd className="mono">{formatUsd(token.volume24h)}</dd>
+                </div>
+                <div>
+                  <dt>Holders</dt>
+                  <dd className="mono">{safety?.holders != null ? safety.holders.toLocaleString("en-US") : "–"}</dd>
+                </div>
+                <div>
+                  <dt>Top 10</dt>
+                  <dd className="mono">{safety?.top10Pct != null ? `${Math.round(safety.top10Pct)}%` : "–"}</dd>
+                </div>
+              </dl>
+              {risk && <RiskBadge level={risk.level} />}
+            </>
+          ) : (
+            <span className={styles.loadingBar}>Loading live prices…</span>
+          )}
         </div>
 
-        <label className={`${styles.box} ${!amount || sizeOk ? "" : styles.invalid}`}>
-          <span className={styles.label}>You pay</span>
-          <span className={styles.row}>
+        <PriceChart pool={token?.pool?.id ?? null} token={token?.address ?? ""} />
+
+        <TokenTabs token={token} risk={risk} safety={safety} />
+      </section>
+
+      {/* Right: the trade panel. */}
+      <aside className={styles.side} aria-label="Trade">
+        <form className={styles.trade} onSubmit={submit} aria-label="Swap" noValidate>
+          <div className={styles.sides} role="radiogroup" aria-label="Side">
+            {(["buy", "sell"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                role="radio"
+                aria-checked={side === option}
+                className={`${styles.sideBtn} ${option === "buy" ? styles.sideBuy : styles.sideSell} ${side === option ? styles.sideOn : ""}`}
+                onClick={() => side !== option && flip()}
+              >
+                {option === "buy" ? "Buy" : "Sell"}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.labelRow}>
+            <span>{buying ? "You pay" : `You sell`}</span>
+            <span className={`mono ${styles.tag} ${realOn ? styles.tagReal : ""}`}>{realOn ? "Real swap" : "Simulated"}</span>
+          </div>
+          <label className={`${styles.amountBox} ${!amount || sizeOk ? "" : styles.invalid}`}>
             <input
-              className={styles.amount}
+              className={`mono ${styles.amount}`}
               inputMode="decimal"
               value={amount}
               placeholder="0"
@@ -292,155 +352,110 @@ export function SwapScreen({ initialToken }: { initialToken?: string }) {
                 setAmount(next);
                 setStatus("idle");
               }}
-              aria-label={`Amount in ${side === "buy" ? "ETH" : (token?.symbol ?? "tokens")}`}
+              aria-label={`Amount in ${buying ? "ETH" : (token?.symbol ?? "tokens")}`}
               aria-invalid={Boolean(amount) && !sizeOk}
             />
-            {side === "buy" ? ethChip : tokenChip}
-          </span>
-          <span className={`mono ${styles.sub}`}>
-            {tradeUsd > 0 ? <Tween value={tradeUsd} format={(v) => `≈ $${formatFixed(v, 2)}`} /> : `ETH $${formatFixed(ethUsd, 2)}`}
-          </span>
-        </label>
-
-        <button type="button" className={styles.flip} onClick={flip} aria-label="Switch buy and sell">
-          <span className={styles.flipIcon} style={{ transform: `rotate(${flips * 180}deg)` }}>
-            <FlipIcon />
-          </span>
-        </button>
-
-        <div className={styles.box}>
-          <span className={styles.label}>You receive</span>
-          <span className={styles.row}>
-            <Tween value={received} format={(v) => (v > 0 ? formatAmount(v) : "0")} className={`${styles.amount} ${live.status === "loading" ? styles.pending : ""}`} />
-            {side === "buy" ? tokenChip : ethChip}
-          </span>
-          <span className={`mono ${styles.sub}`}>
-            {token ? `${token.symbol} ${formatPrice(token.priceUsd)}${token.pool ? ` · pool ${token.symbol} / ${token.pool.quoteSymbol} (${token.pool.version})` : ""}` : "…"}
-          </span>
-        </div>
-
-        <fieldset className={styles.pick}>
-          <legend>Get paid back in</legend>
-          <div className={styles.chips}>
-            {PAYBACK_TICKERS.map((ticker) => (
-              <button
-                key={ticker}
-                type="button"
-                className={`${styles.chip} ${bag.ticker === ticker ? styles.chipOn : ""}`}
-                aria-pressed={bag.ticker === ticker}
-                onClick={() => bag.setTicker(ticker)}
-              >
-                {ticker}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-
-        {realOn && (
-          <fieldset className={styles.pick}>
-            <legend>Max slippage</legend>
-            <div className={styles.chips}>
-              {SLIPPAGES.map((bps) => (
+            {buying ? ethChip : tokenChip}
+          </label>
+          {buying && (
+            <div className={styles.presets}>
+              {["0.001", "0.005", "0.01", "0.05"].map((preset) => (
                 <button
-                  key={bps}
+                  key={preset}
                   type="button"
-                  className={`${styles.chip} ${slippageBps === bps ? styles.chipOn : ""}`}
-                  aria-pressed={slippageBps === bps}
-                  onClick={() => setSlippagePick(bps)}
+                  className={amount === preset ? styles.presetOn : ""}
+                  onClick={() => {
+                    setAmount(preset);
+                    setStatus("idle");
+                  }}
                 >
-                  {bps / 100}%
+                  {preset}
                 </button>
               ))}
             </div>
-          </fieldset>
-        )}
+          )}
+          <span className={`mono ${styles.sub}`}>
+            {tradeUsd > 0 ? <Tween value={tradeUsd} format={(v) => `≈ $${formatFixed(v, 2)}`} /> : `ETH $${formatFixed(ethUsd, 2)}`}
+          </span>
 
-        <dl className={styles.lines}>
-          <div>
-            <dt>Fee</dt>
-            <dd className="mono">
-              {FEE_RATE * 100}% · <Tween value={tradeUsd * FEE_RATE} format={(v) => `$${formatFixed(v, 2)}`} />
-            </dd>
+          <div className={styles.receive}>
+            <span>You receive about</span>
+            <span className={styles.receiveValue}>
+              <Tween value={received} format={(v) => (v > 0 ? formatAmount(v) : "0")} className={`mono ${live.status === "loading" ? styles.pending : ""}`} />
+              {buying ? tokenChip : ethChip}
+            </span>
           </div>
-          <div className={styles.back}>
-            <dt>Back to you as stock</dt>
-            <dd className="mono">
-              <Tween value={payback} format={formatAmount} /> {bag.ticker} · <Tween value={tradeUsd * PAYBACK_RATE} format={(v) => `$${formatFixed(v, 2)}`} />
-            </dd>
-          </div>
-        </dl>
 
-        <button className={`btn btn-main ${styles.go}`} disabled={!needsLogin && (!quote || status === "sending" || overRealCap)}>
-          {button}
-        </button>
-
-        <p className={`${styles.note} ${status === "done" ? styles.done : ""}`} role="status">
-          {note}
-        </p>
-      </form>
-
-      {token && risk && (
-        <aside className={styles.info} aria-label="Token details">
-          <div className={styles.infoHead}>
-            <TokenAvatar token={token} size={40} />
-            <div>
-              <strong>{token.symbol}</strong>
+          <div className={styles.payback}>
+            <div className={styles.paybackTop}>
+              <span>Paid back to you in</span>
               <span className="mono">
-                {token.kind === "stock" ? "Stock token" : "Meme"} · {token.address.slice(0, 10)}…
+                +<Tween value={payback} format={formatAmount} /> {bag.ticker}
               </span>
             </div>
-          </div>
-          <dl className={styles.stats}>
-            <div>
-              <dt>Price</dt>
-              <dd className="mono">{formatPrice(token.priceUsd)}</dd>
+            <div className={styles.stocks} role="radiogroup" aria-label="Stock to be paid back in">
+              {PAYBACK_TICKERS.map((ticker) => (
+                <button
+                  key={ticker}
+                  type="button"
+                  role="radio"
+                  aria-checked={bag.ticker === ticker}
+                  className={bag.ticker === ticker ? styles.stockOn : ""}
+                  onClick={() => bag.setTicker(ticker)}
+                >
+                  {ticker}
+                  <span className="mono">{prices[ticker] ? formatPrice(prices[ticker]) : "…"}</span>
+                </button>
+              ))}
             </div>
+          </div>
+
+          {realOn && (
+            <div className={styles.slippage}>
+              <span>Max slippage</span>
+              <div>
+                {SLIPPAGES.map((bps) => (
+                  <button key={bps} type="button" className={slippageBps === bps ? styles.presetOn : ""} aria-pressed={slippageBps === bps} onClick={() => setSlippagePick(bps)}>
+                    {bps / 100}%
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <dl className={styles.lines}>
             <div>
-              <dt>24h</dt>
-              <dd className={`mono ${token.change24h >= 0 ? styles.up : styles.down}`}>
-                {token.change24h >= 0 ? "+" : ""}
-                {token.change24h.toFixed(2)}%
+              <dt>Fee {FEE_RATE * 100}%</dt>
+              <dd className="mono">
+                <Tween value={tradeUsd * FEE_RATE} format={(v) => `$${formatFixed(v, 2)}`} />
               </dd>
             </div>
             <div>
-              <dt>Volume 24h</dt>
-              <dd className="mono">{formatUsd(token.volume24h)}</dd>
+              <dt>Back to you</dt>
+              <dd className={`mono ${styles.back}`}>
+                <Tween value={tradeUsd * PAYBACK_RATE} format={(v) => `$${formatFixed(v, 2)}`} />
+              </dd>
             </div>
-            <div>
-              <dt>Liquidity</dt>
-              <dd className="mono">{token.liquidity > 0 ? formatUsd(token.liquidity) : "–"}</dd>
-            </div>
-            <div>
-              <dt>Holders</dt>
-              <dd className="mono">{safety?.holders != null ? safety.holders.toLocaleString("en-US") : "–"}</dd>
-            </div>
-            <div>
-              <dt>Top 10 hold</dt>
-              <dd className="mono">{safety?.top10Pct != null ? `${Math.round(safety.top10Pct)}%` : "–"}</dd>
-            </div>
+            {quote && (
+              <div>
+                <dt>Route</dt>
+                <dd className="mono">{quote.route}</dd>
+              </div>
+            )}
           </dl>
-          <section className={styles.riskBox} aria-label="Risk check">
-            <div className={styles.riskHead}>
-              <span>Risk check</span>
-              <RiskBadge level={risk.level} />
-            </div>
-            <p>{risk.summary}</p>
-            <ul>
-              {risk.flags.map((flag) => (
-                <li key={flag.label} className={styles[flag.level]}>
-                  {flag.label}
-                </li>
-              ))}
-            </ul>
-          </section>
-          <div className={styles.stockNote}>
-            <span className="mono">{bag.ticker}</span>
-            <p>
-              Paybacks are counted at the live {bag.ticker} price ({formatPrice(stockPrice)}) and claimed weekly. Change the stock any time; it applies to your next trades.
-            </p>
-          </div>
-        </aside>
-      )}
+
+          <button
+            className={`${styles.go} ${needsLogin ? styles.goNeutral : buying ? styles.goBuy : styles.goSell}`}
+            disabled={!needsLogin && (!quote || status === "sending" || overRealCap)}
+          >
+            {button}
+          </button>
+
+          <p className={`${styles.note} ${status === "done" ? styles.done : ""}`} role="status">
+            {note}
+          </p>
+        </form>
+      </aside>
 
       <TokenPicker
         open={picker}

@@ -1,20 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Wordmark } from "@/components/site/Wordmark";
 import { appPath, siteUrl, stripAppBase } from "@/lib/urls";
 import { AuthProvider } from "./AuthProvider";
 import { BagProvider } from "./BagStore";
 import { MarketProvider } from "./MarketProvider";
 import { AccountButton } from "./AccountButton";
+import { useBag } from "./BagStore";
+import { TokenPicker } from "./TokenPicker";
+import { formatFixed } from "@/lib/tokens";
 import { AgentIcon, BagIcon, DiscoverIcon, GiftIcon, LedgerIcon, MoreIcon, SwapIcon, WalletIcon } from "./icons";
 import styles from "./AppShell.module.css";
 
 // Paths are the app host's own (app.veul.trade/bag); next.config.ts maps them onto the /app routes.
 const NAV = [
-  { href: "/", label: "Swap", Icon: SwapIcon },
+  { href: "/", label: "Trade", Icon: SwapIcon },
   { href: "/discover", label: "Discover", Icon: DiscoverIcon },
   { href: "/wallet", label: "Wallet", Icon: WalletIcon },
   { href: "/bag", label: "Stock bag", Icon: BagIcon },
@@ -34,8 +37,8 @@ function isActive(href: string, pathname: string, tabs = false) {
 }
 
 /**
- * The top navigation with a pill that slides to the active tab (measured from the links, so it follows any label
- * width). It jumps without animation on first paint and glides on later route changes.
+ * The top navigation with an underline that slides to the active tab (measured from the links, so it follows any
+ * label width). It jumps without animation on first paint and glides on later route changes.
  */
 function TopNav({ pathname }: { pathname: string }) {
   const listRef = useRef<HTMLDivElement>(null);
@@ -76,6 +79,50 @@ function TopNav({ pathname }: { pathname: string }) {
 }
 
 /**
+ * Global token search in the top bar: opens the token picker (also on "/"), and picking a token opens it on the
+ * trade screen.
+ */
+function GlobalSearch() {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const typing = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      if (event.key === "/" && !typing && !event.metaKey && !event.ctrlKey) {
+        event.preventDefault();
+        setOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  return (
+    <>
+      <button type="button" className={styles.search} onClick={() => setOpen(true)}>
+        <span>Search tokens, stocks or paste an address</span>
+        <kbd>/</kbd>
+      </button>
+      <TokenPicker open={open} onClose={() => setOpen(false)} onPick={(token) => router.push(`${appPath()}?token=${token.address}`)} />
+    </>
+  );
+}
+
+/** What the wallet has been paid back so far (verified), linking to the stock bag. Hidden until there is any. */
+function PaidBack() {
+  const bag = useBag();
+  if (!bag.verified || bag.verified.totals.trades === 0) return null;
+  return (
+    <Link href={appPath("/bag")} className={styles.paid}>
+      <span>Paid back</span>
+      <span className="mono">${formatFixed(bag.totalUsd, bag.totalUsd < 1 ? 4 : 2)}</span>
+    </Link>
+  );
+}
+
+/**
  * App frame, in the landing's look: a slim top bar with the tabs (bottom tabs on phones), and the full width for
  * the screens. Providers live here so the landing never loads Privy.
  */
@@ -92,16 +139,19 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className={styles.topInner}>
                 <Wordmark name="Veul" href={siteUrl()} />
                 <TopNav pathname={pathname} />
+                <GlobalSearch />
                 <div className={styles.topEnd}>
                   <span className={styles.preview} title="Live prices and quotes. Swaps are simulated until real swaps go live.">
                     Preview
                   </span>
+                  <PaidBack />
                   <AccountButton compact />
                 </div>
               </div>
             </header>
 
-            <main className={styles.main}>
+            {/* The trade screen runs edge to edge (a terminal); the other screens keep the centred page width. */}
+            <main className={pathname === "/" ? styles.mainFull : styles.main}>
               {/* Keyed by route so each screen fades up as it opens. */}
               <div key={pathname} className={styles.screen}>
                 {children}
