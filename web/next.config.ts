@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
+  // One address: www.veul.trade redirects to veul.trade.
+  async redirects() {
+    return [{ source: "/:path*", has: [{ type: "host", value: "www.veul.trade" }], destination: "https://veul.trade/:path*", permanent: true }];
+  },
   // cacheComponents and partialPrefetching (create-next-app defaults) are off: on Cloudflare Workers
   // through OpenNext every page hung with "promise created by a request that has since ended".
   turbopack: {

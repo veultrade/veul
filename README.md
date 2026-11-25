@@ -2,6 +2,8 @@
 
 # Veul
 
+**[veul.trade](https://veul.trade)** · [app](https://veul.trade/app)
+
 Swap any token on Robinhood Chain through Uniswap, and get paid back in stocks. Every swap pays a 0.5% fee;
 half of it, 0.25% of the trade, is recorded for you and paid back every week as the stock token you pick
 (NVDA, SPY, TSLA or GOOGL at launch).
