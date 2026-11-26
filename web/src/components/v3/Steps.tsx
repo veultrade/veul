@@ -11,7 +11,7 @@ export function Steps({ media }: { media: { swap: string; earn: string; collect:
   const steps = [
     { title: "1. Swap", text: "Trade any token on Robinhood Chain through Uniswap, from your own wallet.", src: media.swap },
     { title: "2. Earn", text: "0.25% of every trade is recorded for you, onchain, in the stock you picked.", src: media.earn },
-    { title: "3. Collect", text: "Claim every Monday. The stock lands in your wallet in one transaction.", src: media.collect },
+    { title: "3. Collect", text: "Claim from the next day. The stock lands in your wallet in one transaction.", src: media.collect },
   ];
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);

@@ -82,7 +82,7 @@ export function ClaimPanel() {
   else if (busy) label = step === "confirm-in-wallet" ? "Check your wallet…" : "Claiming…";
   else if (status?.open) label = `Claim $${formatFixed(claimable, 2)} as ${bag.ticker}`;
 
-  let note: React.ReactNode = "Paybacks are posted every Monday and claimed into your wallet as the stock you pick.";
+  let note: React.ReactNode = "Paybacks are posted once a day and claimed into your wallet as USDG or the stock you pick.";
   if (step && STEP_TEXT[step]) note = STEP_TEXT[step];
   else if (error) note = error;
   else if (done)

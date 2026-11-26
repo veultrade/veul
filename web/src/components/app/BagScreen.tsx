@@ -36,7 +36,7 @@ export function BagScreen() {
   return (
     <div className={calm.col}>
       <h1 className={calm.title}>Bag</h1>
-      <p className={calm.lead}>Every trade adds a little stock here. Claim it once a week into your wallet.</p>
+      <p className={calm.lead}>Every trade adds a little stock here. Claim it into your wallet from the next day.</p>
 
       <div className={styles.cards}>
         <article className={`${styles.card} ${styles.wide}`}>

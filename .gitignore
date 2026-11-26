@@ -2,6 +2,7 @@
 .dev.vars
 .prod.vars
 .env*
+.poster-key
 
 # Local working folders: planning notes, prototypes, raw generated media, data snapshots, tool settings.
 docs/

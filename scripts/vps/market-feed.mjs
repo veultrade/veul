@@ -103,3 +103,22 @@ try {
   console.error(`${started} reconcile failed: ${error.message}`);
   process.exitCode = 1;
 }
+
+// Daily claims root (VeulClaimsV2): asked in the first quarter hour of 00:00–03:00 UTC, so a failed run is retried
+// within the night. Safe to repeat: the Worker posts only when the total grew, and the contract allows the poster
+// one root per interval (20 h), so the later calls answer "too-soon" or "nothing-new".
+const now = new Date();
+if (now.getUTCHours() <= 3 && now.getUTCMinutes() < 15) {
+  try {
+    const response = await fetch(new URL("/api/internal/claims-epoch", env.FEED_URL), {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.FEED_TOKEN}` },
+    });
+    const result = await response.text();
+    if (!response.ok) throw new Error(`claims-epoch ${response.status} ${result.slice(0, 200)}`);
+    console.log(`${started} claims-epoch ${result.slice(0, 300)}`);
+  } catch (error) {
+    console.error(`${started} claims-epoch failed: ${error.message}`);
+    process.exitCode = 1;
+  }
+}

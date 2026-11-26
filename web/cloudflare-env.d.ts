@@ -22,8 +22,12 @@ interface CloudflareEnv {
   COINGECKO_PLAN?: string;
   /** GMGN OpenAPI key for trending and new pools (market routes only, no private key needed). */
   GMGN_API_KEY?: string;
-  /** VeulClaims contract (session 1.6), a plain var in wrangler.jsonc. Claims stay closed until it is set. */
+  /** The live claims contract (VeulClaimsV2 since the daily switch), a plain var in wrangler.jsonc. Claims stay closed until it is set. */
   CLAIMS_ADDRESS?: string;
+  /** The first, weekly claims contract (VeulClaims, paused after the switch); its paid-out amounts are subtracted in v2. */
+  CLAIMS_V1_ADDRESS?: string;
+  /** Private key of the poster: it may only post roots on VeulClaimsV2, within the contract's limits. Secret. */
+  CLAIMS_POSTER_KEY?: string;
 }
 
 // The few D1 types the ledger uses (avoids adding @cloudflare/workers-types for one binding).

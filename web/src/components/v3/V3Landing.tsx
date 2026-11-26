@@ -19,7 +19,7 @@ const FAQS = [
   { q: "Is Veul a broker or an exchange?", a: "No. Veul is an interface for Uniswap pools on Robinhood Chain. Your tokens stay in your wallet, and you sign every swap yourself." },
   { q: "Where does the payback come from?", a: "From the fee. Each swap pays 0.5%; half of that, 0.25% of the trade, is recorded for you and paid back every week." },
   { q: "Which stocks can I be paid back in?", a: "NVDA, SPY, TSLA and GOOGL at launch. You pick one, and you can change it at any time for your next trades." },
-  { q: "When and how do I claim?", a: "Every Monday. The claim pays your payback in USDG and swaps it into your stock in one transaction you sign, so the stock lands in your own wallet." },
+  { q: "When and how do I claim?", a: "From the day after your trade: paybacks are posted once a day. The claim pays your payback in USDG and swaps it into your stock in one transaction you sign, so the stock lands in your own wallet." },
   { q: "Can I use Veul from the US?", a: "No. Stock tokens are not available to US persons, and Veul blocks the US and other restricted regions." },
   { q: "What are the risks?", a: "Memecoins can go to zero. Stock tokens follow their stocks, so they fall as well as rise, and their issuer can pause them. Nothing on Veul is financial advice." },
   { q: "Is there a Veul token?", a: "No. The product comes first. If a token ever comes, it will be announced here and on our X account, never in a DM." },

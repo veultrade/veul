@@ -14,7 +14,7 @@ export default function TermsPage() {
       <ul>
         <li>Each swap carries a 0.5% fee, shown before you sign.</li>
         <li>Half of that fee (0.25% of the trade) is recorded as a payback owed to you, in USDG.</li>
-        <li>Once a week you can claim your payback. The claim swaps it into the stock token you picked, in a transaction you sign.</li>
+        <li>Your payback can be claimed from the day after your trade. The claim pays it as USDG or swaps it into the stock token you picked, in a transaction you sign.</li>
         <li>Stock tokens are issued by Robinhood, not by Veul. Their issuer can pause them or restrict wallets.</li>
       </ul>
       <h2>Risk</h2>

@@ -96,7 +96,7 @@ export async function realSwap(args: {
 }
 
 /**
- * Weekly claim (session 1.6): the server builds and simulates claimAndSwap on the VeulClaims contract; the wallet
+ * Daily claim: the server builds and simulates claimAndSwap on the VeulClaims contract; the wallet
  * signs and sends it. The stock lands in the wallet in that one transaction.
  */
 export async function realClaim(args: { wallet: WalletClient; account: Hex; ticker: string; slippageBps: number; onStep: (step: SwapStep) => void }) {

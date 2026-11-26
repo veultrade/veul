@@ -8,9 +8,9 @@ import { rpc, serverEnv } from "./env";
 import { legFor, quoteLeg } from "./quote";
 
 /**
- * Weekly payback claims (session 1.6). The VeulClaims contract (contracts/src/VeulClaims.sol) holds the USDG and
- * the current Merkle root; D1 holds each epoch's leaves and proofs (written by scripts/claims-epoch.mjs). A wallet
- * claims its cumulative amount minus what it already claimed, swapped into the stock it picked.
+ * Daily payback claims. The VeulClaimsV2 contract (contracts/src/VeulClaimsV2.sol) holds the USDG and the current
+ * Merkle root; D1 holds each epoch's leaves and proofs (written daily by lib/server/claims-epoch.ts). A wallet claims
+ * its cumulative amount minus what it already claimed, as USDG or swapped into the stock it picked.
  */
 
 const USDG_DECIMALS = 6;
@@ -50,13 +50,13 @@ async function claimsAddress(): Promise<Address | null> {
 }
 
 /** The wallet's leaf in the tree the contract currently uses (null if it has none). */
-async function leafFor(wallet: Address, root: Hex): Promise<{ cumulative: bigint; proof: Hex[] } | null> {
+async function leafFor(contract: Address, wallet: Address, root: Hex): Promise<{ cumulative: bigint; proof: Hex[] } | null> {
   const { LEDGER } = await serverEnv();
   if (!LEDGER) throw new Error("Ledger database is not configured");
   const row = await LEDGER.prepare(
-    "SELECT l.cumulative_usdg AS cumulative, l.proof AS proof FROM claim_leaves l JOIN claim_epochs e ON e.epoch = l.epoch WHERE e.root = ? AND l.wallet = ?",
+    "SELECT l.cumulative_usdg AS cumulative, l.proof AS proof FROM claim_leaves l JOIN claim_epochs e ON e.epoch = l.epoch WHERE e.contract = ? AND e.root = ? AND l.wallet = ?",
   )
-    .bind(root.toLowerCase(), wallet.toLowerCase())
+    .bind(contract.toLowerCase(), root.toLowerCase(), wallet.toLowerCase())
     .first<{ cumulative: number; proof: string }>();
   return row ? { cumulative: BigInt(row.cumulative), proof: JSON.parse(row.proof) as Hex[] } : null;
 }
@@ -71,15 +71,15 @@ export async function claimStatus(wallet: Address): Promise<ClaimStatus & { proo
     client.readContract({ address: contract, abi: claimsAbi, functionName, args } as never) as Promise<T>;
   const [root, epoch, paused, claimed] = await Promise.all([read<Hex>("root"), read<bigint>("epoch"), read<boolean>("paused"), read<bigint>("claimed", [wallet])]);
 
-  const leaf = epoch > 0n ? await leafFor(wallet, root) : null;
+  const leaf = epoch > 0n ? await leafFor(contract, wallet, root) : null;
   const cumulative = leaf?.cumulative ?? 0n;
   const claimable = cumulative > claimed ? cumulative - claimed : 0n;
   const reason = paused
     ? "Claims are paused for a moment."
     : epoch === 0n
-      ? "The first weekly payout has not been posted yet."
+      ? "The first daily payout has not been posted yet."
       : claimable === 0n
-        ? "Nothing to claim yet. New paybacks are added every Monday."
+        ? "Nothing to claim yet. New paybacks are added once a day."
         : claimable < MIN_CLAIM_USDG
           ? `Paying out as stock opens at ${formatUnits(MIN_CLAIM_USDG, USDG_DECIMALS)} USDG. Take it as USDG now, or let it add up.`
           : null;
