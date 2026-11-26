@@ -289,6 +289,13 @@ export async function walletLedger(wallet: Address, limit = 200) {
   };
 }
 
+/** The latest verified swaps of every wallet, for the public Activity feed (all of it is public onchain data). */
+export async function recentLedger(limit = 50) {
+  const db = await ledgerDb();
+  const rows = await db.prepare("SELECT * FROM swaps ORDER BY block_time DESC LIMIT ?").bind(Math.min(Math.max(limit, 1), 100)).all<Row>();
+  return { entries: rows.results.map(fromRow) };
+}
+
 const SCAN_KEY = "scan:fee-wallet:block";
 
 /**

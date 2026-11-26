@@ -1,0 +1,249 @@
+/*
+  Shared pieces of the calm layout (after app.circuit.org), used by every screen in the main column:
+  a centred column, a large light title, underline tabs, and lists as one rounded panel with hairline rows.
+*/
+.col {
+  width: min(680px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-top: 40px;
+}
+
+.wide {
+  width: min(880px, calc(100% - 32px));
+}
+
+.title {
+  margin: 0 0 22px;
+  font-size: 44px;
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+}
+
+.lead {
+  margin: -8px 0 24px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.tabs {
+  display: flex;
+  gap: 22px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs button {
+  position: relative;
+  flex: none;
+  padding: 0 0 10px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s var(--ease);
+}
+
+.tabs button:hover,
+.tabs .tabOn {
+  color: var(--text);
+}
+
+.tabs .tabOn {
+  font-weight: 500;
+}
+
+.tabs .tabOn::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--text);
+}
+
+.count {
+  margin-left: 6px;
+  color: var(--faint);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.list > * + * {
+  border-top: 1px solid var(--line);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 16px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  transition: background-color 0.15s var(--ease);
+}
+
+button.row,
+a.row {
+  cursor: pointer;
+}
+
+button.row:hover,
+a.row:hover,
+.rowOn {
+  background: var(--raise);
+}
+
+.dim {
+  opacity: 0.5;
+}
+
+.name {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.name strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.name small {
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.stockTag {
+  padding: 0 5px;
+  border-radius: 4px;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--lav);
+  background: color-mix(in srgb, var(--lav) 14%, transparent);
+}
+
+.end {
+  display: grid;
+  flex: none;
+  justify-items: end;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.end small {
+  font-size: 13px;
+}
+
+.up {
+  color: var(--up);
+}
+
+.down {
+  color: var(--down);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.empty {
+  padding: 22px 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.foot {
+  margin: 14px 2px 0;
+  font-size: 13px;
+  color: var(--faint);
+  line-height: 1.5;
+}
+
+.section {
+  margin: 34px 0 12px;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+/* Pill buttons in the calm look. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 99px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.pill:hover {
+  background: var(--raise);
+}
+
+.pillMain {
+  border-color: var(--lav);
+  background: var(--lav);
+  color: #04121b;
+  font-weight: 500;
+}
+
+.pillMain:hover {
+  background: var(--lav);
+  filter: brightness(1.08);
+}
+
+@media (max-width: 1000px) {
+  .col,
+  .wide {
+    width: calc(100% - 24px);
+    padding-top: 22px;
+  }
+
+  .title {
+    font-size: 34px;
+  }
+
+  .row {
+    padding: 10px 12px;
+  }
+}

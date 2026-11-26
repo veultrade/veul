@@ -1,29 +1,32 @@
 /* Shared styles for the Stock bag and Ledger screens. */
+/* The calm column (as Calm.module.css .col, a little wider for two-panel screens). */
 .page {
   display: grid;
   gap: 16px;
+  width: min(880px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-top: 40px;
 }
 
-/* One line: the screen name, then what it is for, in quiet type. */
+/* The screen name large and light, then what it is for, in quiet type. */
 .title {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 16px;
-  padding: 4px 2px 0;
+  display: grid;
+  gap: 14px;
+  margin-bottom: 8px;
 }
 
 .title h1 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 24px;
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1;
   letter-spacing: -0.035em;
 }
 
 .title p {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.5;
   color: var(--muted);
 }
@@ -328,5 +331,16 @@
 
   .heroDots {
     min-height: 120px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .page {
+    width: calc(100% - 24px);
+    padding-top: 22px;
+  }
+
+  .title h1 {
+    font-size: 34px;
   }
 }

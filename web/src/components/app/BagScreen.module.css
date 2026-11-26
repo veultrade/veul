@@ -1,0 +1,132 @@
+/* Bag as cards (after Circuit's agent cards): one wide total card, then one tinted card per payback stock. */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 176px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--tint, var(--lav)) 16%, var(--panel)), var(--panel) 72%);
+  overflow: hidden;
+  transition: filter 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.card:hover {
+  filter: brightness(1.1);
+}
+
+.wide {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--lav) 18%, var(--panel)), var(--panel) 70%);
+}
+
+.wide:hover {
+  filter: none;
+}
+
+.collecting {
+  border-color: color-mix(in srgb, var(--lav) 55%, transparent);
+}
+
+.stack {
+  display: flex;
+}
+
+.stack > * {
+  box-shadow: 0 0 0 2px var(--panel);
+  border-radius: 50%;
+}
+
+.stack > * + * {
+  margin-left: -8px;
+}
+
+.kicker {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.card .big {
+  margin: 2px 0 6px;
+  font-size: 40px;
+  letter-spacing: -0.03em;
+}
+
+.card p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.wide p {
+  margin-bottom: 16px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.badge {
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  color: var(--lav);
+  background: color-mix(in srgb, var(--lav) 14%, transparent);
+}
+
+.switch {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 99px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.switch:hover {
+  color: var(--text);
+  border-color: var(--lav);
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--lav);
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 140px;
+  }
+}

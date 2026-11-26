@@ -1,0 +1,25 @@
+.dot {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2);
+  border-top-color: var(--lav);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sim {
+  padding: 0 6px;
+  border-radius: 4px;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--raise);
+}

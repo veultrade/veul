@@ -1,0 +1,291 @@
+/* The trade ticket in the dock (after app.circuit.org): one rounded panel, big amount, pill controls. */
+.ticket {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  animation: rise 0.3s var(--ease);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headText {
+  display: grid;
+  min-width: 0;
+}
+
+.headText strong {
+  font-weight: 500;
+}
+
+.headText > span {
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.up {
+  color: var(--up);
+}
+
+.down {
+  color: var(--down);
+}
+
+.mode {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  color: var(--faint);
+  border: 1px solid var(--line-2);
+}
+
+.modeReal {
+  color: var(--up);
+  border-color: color-mix(in srgb, var(--up) 40%, transparent);
+}
+
+.close {
+  border: 0;
+  background: none;
+  color: var(--faint);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.15s var(--ease);
+}
+
+.close:hover {
+  color: var(--text);
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--bg);
+}
+
+.sides button {
+  height: 32px;
+  border: 0;
+  border-radius: 99px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.sides .buyOn {
+  color: var(--up);
+  background: color-mix(in srgb, var(--up) 16%, transparent);
+}
+
+.sides .sellOn {
+  color: var(--down);
+  background: color-mix(in srgb, var(--down) 16%, transparent);
+}
+
+.amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 2px 0;
+}
+
+.amount input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 40px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.amount span {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.invalid input {
+  color: var(--down);
+}
+
+.usd {
+  margin-top: -10px;
+  padding-left: 2px;
+  font-size: 13px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.presets {
+  display: flex;
+  gap: 6px;
+}
+
+.presets button,
+.slippage button,
+.stocks button {
+  flex: 1;
+  height: 30px;
+  border: 1px solid var(--line-2);
+  border-radius: 99px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.presets button:hover,
+.slippage button:hover,
+.stocks button:hover,
+.presets .on,
+.slippage .on,
+.stocks .on {
+  border-color: var(--lav);
+  color: var(--text);
+}
+
+.lines {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.lines div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lines dt {
+  color: var(--muted);
+}
+
+.lines dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.pending {
+  opacity: 0.5;
+}
+
+.slippage {
+  display: flex;
+  gap: 4px;
+}
+
+.slippage button {
+  flex: none;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.payback {
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--lav) 13%, transparent);
+  font-size: 14px;
+}
+
+.payback p {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.payback strong {
+  font-weight: 500;
+}
+
+.stocks {
+  display: flex;
+  gap: 6px;
+}
+
+.stocks button {
+  height: 26px;
+  font-size: 12px;
+}
+
+.go {
+  height: 44px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--text);
+  color: var(--bg);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: filter 0.15s var(--ease), transform 0.1s var(--ease), opacity 0.15s var(--ease);
+}
+
+.go:hover {
+  filter: brightness(1.08);
+}
+
+.go:active {
+  transform: scale(0.985);
+}
+
+.go:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+.goBuy {
+  background: var(--lav);
+  color: #04121b;
+}
+
+.goSell {
+  background: var(--down);
+  color: #1a0306;
+}
+
+.note {
+  margin: -4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--faint);
+}
+
+.note a {
+  color: var(--lav);
+}
+
+.done {
+  color: var(--up);
+}

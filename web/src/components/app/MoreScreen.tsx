@@ -1,42 +1,33 @@
 import Link from "next/link";
-import { AgentIcon, GiftIcon, LedgerIcon } from "./icons";
-import screens from "./Screens.module.css";
-import styles from "./Features.module.css";
 import { appPath, siteUrl } from "@/lib/urls";
+import calm from "./Calm.module.css";
 
 const ITEMS = [
-  { href: "/ledger", label: "Ledger", note: "Every fee and payback, line by line", Icon: LedgerIcon },
-  { href: "/rewards", label: "Rewards", note: "Invite friends, earn stock from their trades", Icon: GiftIcon },
-  { href: "/agents", label: "Agents", note: "Let an AI agent trade for you", Icon: AgentIcon },
+  { href: appPath("/rewards"), label: "Rewards", note: "Invite friends, earn stock from their trades" },
+  { href: appPath("/agents"), label: "Agents", note: "Let an AI agent trade for you" },
+  { href: appPath("/wallet"), label: "Wallet", note: "Your balances on Robinhood Chain" },
+  { href: siteUrl(), label: "Veul home", note: "Back to the website" },
 ];
 
-/** Phone-only menu for the pages that do not fit in the bottom tabs. */
+/** Phone menu for the pages that do not fit in the top bar. */
 export function MoreScreen() {
   return (
-    <div className={screens.page}>
-      <header className={screens.title}>
-        <h1>More</h1>
-      </header>
-      <ul className={styles.moreList}>
-        {ITEMS.map(({ href, label, note, Icon }) => (
+    <div className={calm.col}>
+      <h1 className={calm.title}>More</h1>
+      <ul className={calm.list}>
+        {ITEMS.map(({ href, label, note }) => (
           <li key={href}>
-            <Link href={appPath(href)}>
-              <Icon />
-              <span>
-                {label}
+            <Link href={href} className={calm.row}>
+              <span className={calm.name}>
+                <strong>{label}</strong>
                 <small>{note}</small>
+              </span>
+              <span className={calm.muted} aria-hidden="true">
+                →
               </span>
             </Link>
           </li>
         ))}
-        <li>
-          <Link href={siteUrl()}>
-            <span>
-              Veul home
-              <small>Back to the website</small>
-            </span>
-          </Link>
-        </li>
       </ul>
     </div>
   );
