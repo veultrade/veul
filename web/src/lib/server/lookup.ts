@@ -3,6 +3,7 @@ import type { MarketToken } from "@/lib/market";
 import { tokenByAddress } from "./dexscreener";
 import { feedToken } from "./gmgn";
 import { tokenOnchain } from "./onchain-lookup";
+import { pinnedStockPool } from "./stocks";
 
 const DEXSCREENER_TIMEOUT_MS = 4000;
 
@@ -20,7 +21,10 @@ export async function lookupToken(address: string): Promise<MarketToken | null> 
   const token = await lookupFromSources(address);
   // Logos Veul serves itself, by address (never by symbol, which anyone can copy).
   const own = OWN_LOGOS[address.toLowerCase()];
-  return token && own ? { ...token, imageUrl: own } : token;
+  // Stocks always show and trade through their pinned pool, not the one a data provider ranks first.
+  const pinned = pinnedStockPool(address);
+  if (!token) return token;
+  return { ...token, ...(own ? { imageUrl: own } : {}), ...(pinned ? { pool: pinned, kind: "stock" as const } : {}) };
 }
 
 // USDG and WETH logos from CoinGecko, kept in web/public/tokens (2026-11-26).

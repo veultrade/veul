@@ -1,3 +1,4 @@
+import { geoBlocked } from "@/lib/server/geo";
 import { serverEnv } from "@/lib/server/env";
 import { fail, rateLimited } from "@/lib/server/http";
 
@@ -29,8 +30,14 @@ type RpcRequest = { jsonrpc?: string; id?: unknown; method?: string; params?: un
 export async function POST(request: Request) {
   const limited = await rateLimited(request, "RPC_LIMIT");
   if (limited) return limited;
-  const { ALCHEMY_RPC_URL } = await serverEnv();
-  if (!ALCHEMY_RPC_URL) return fail(new Error("RPC is not configured"), 503);
+  // Not offered in blocked regions (lib/server/geo.ts).
+  const blocked = await geoBlocked(request);
+  if (blocked) return blocked;
+  // A separate Alchemy key for wallets (optional), so abuse of this public proxy cannot use up the key the ledger,
+  // quotes and the claims job run on (2026-11-26 swap review, finding 4).
+  const { ALCHEMY_RPC_URL, ALCHEMY_PROXY_URL } = await serverEnv();
+  const upstreamUrl = ALCHEMY_PROXY_URL || ALCHEMY_RPC_URL;
+  if (!upstreamUrl) return fail(new Error("RPC is not configured"), 503);
   const text = await request.text();
   if (text.length > 200_000) return fail(new Error("Request too large"), 413);
   let body: RpcRequest | RpcRequest[];
@@ -45,7 +52,15 @@ export async function POST(request: Request) {
     if (!call || typeof call.method !== "string" || !ALLOWED.has(call.method)) {
       return Response.json({ jsonrpc: "2.0", id: call?.id ?? null, error: { code: -32601, message: `Method not allowed: ${String(call?.method)}` } });
     }
+    // eth_call / eth_estimateGas take [tx, block]; a third parameter is a state override, which a wallet never needs.
+    if ((call.method === "eth_call" || call.method === "eth_estimateGas") && Array.isArray(call.params) && call.params.length > 2) {
+      return Response.json({ jsonrpc: "2.0", id: call.id ?? null, error: { code: -32602, message: "State overrides are not allowed" } });
+    }
   }
-  const upstream = await fetch(ALCHEMY_RPC_URL, { method: "POST", headers: { "content-type": "application/json" }, body: text });
+  // Forward a request rebuilt from the fields checked above, never the raw text: with duplicate keys
+  // ({"method":"debug_x","method":"eth_call"}) JSON.parse keeps the last one, and the upstream parser might keep the
+  // first (swap review, finding B).
+  const rebuilt = calls.map((call) => ({ jsonrpc: "2.0", id: call.id ?? null, method: call.method, params: call.params ?? [] }));
+  const upstream = await fetch(upstreamUrl, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Array.isArray(body) ? rebuilt : rebuilt[0]) });
   return new Response(upstream.body, { status: upstream.status, headers: { "content-type": "application/json", "Cache-Control": "no-store" } });
 }

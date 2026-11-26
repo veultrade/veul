@@ -5,7 +5,12 @@ import { PERMIT2, UNIVERSAL_ROUTER, buildBuy, buildSell, executeCalldata, permit
 import { erc20Abi } from "@/lib/uniswap";
 import { robinhoodChain } from "@/lib/chain";
 import { rpc, serverEnv } from "./env";
+import { tokenByAddress } from "./dexscreener";
 import { ethPriceUsd, legFor, quote } from "./quote";
+import { pinnedStockPool } from "./stocks";
+
+// A route whose price is this much worse than the market price is refused (2026-11-26 swap review, findings 2 and 3).
+const MAX_PRICE_GAP = 0.15;
 
 /**
  * Real swaps (session 1.4). Gated until the launch checks pass: only wallets in SWAP_OWNERS may build a real
@@ -90,6 +95,9 @@ type BuildInput = {
   account: Address;
   feeWallet: Address;
   permit?: { permit: PermitSingle; signature: Hex };
+  /** The output the trader was shown (decimal string); the build is refused if the fresh quote is worse than this
+   * by more than the slippage, so the signed minimum cannot drift from what the trader agreed to. */
+  expectedOut?: string;
 };
 
 /** Router call for a real swap, simulated from the trader's wallet before it is handed out for signing. */
@@ -97,6 +105,13 @@ export async function buildSwap(input: BuildInput) {
   const { token, side, amount, slippageBps, account, feeWallet } = input;
   const client = await rpc();
   const q = await quote(token, side, amount);
+  const outDecimals = side === "buy" ? token.decimals : 18;
+  const fresh = parseUnits(q.amountOut, outDecimals);
+  if (input.expectedOut) {
+    const shown = parseUnits(input.expectedOut, outDecimals);
+    if (fresh * 10_000n < shown * BigInt(10_000 - slippageBps)) throw new Error("The price moved since your quote. Check the new quote and try again.");
+  }
+  await checkPriceGap(token, side, amount, q.amountOut);
   const route = await routeFor(token);
   const keep = BigInt(10_000 - slippageBps);
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);
@@ -132,4 +147,24 @@ export async function buildSwap(input: BuildInput) {
     minOut: formatUnits(minOut, side === "buy" ? token.decimals : 18),
     usd: side === "buy" ? Number(amount) * (await ethPriceUsd()) : Number(q.amountOut) * (await ethPriceUsd()),
   };
+}
+
+/**
+ * Refuses a route whose price is far worse than the market (DexScreener's price for the token): a thin or pushed
+ * pool, or a pool with a hostile hook, would otherwise set a "correct" minimum on a bad price. Pinned stock pools are
+ * the reference themselves. Without a market price the check is skipped (new tokens often have none).
+ */
+async function checkPriceGap(token: MarketToken, side: "buy" | "sell", amount: string, amountOut: string) {
+  if (pinnedStockPool(token.address)) return;
+  const market = (await tokenByAddress(token.address).catch(() => null))?.priceUsd ?? 0;
+  if (!(market > 0)) return;
+  const ethUsd = await ethPriceUsd();
+  const ethAmount = side === "buy" ? Number(amount) : Number(amountOut);
+  const tokenAmount = side === "buy" ? Number(amountOut) : Number(amount);
+  if (!(ethAmount > 0 && tokenAmount > 0 && ethUsd > 0)) return;
+  const routePrice = (ethAmount * ethUsd) / tokenAmount;
+  const worse = side === "buy" ? routePrice / market - 1 : 1 - routePrice / market;
+  if (worse > MAX_PRICE_GAP) {
+    throw new Error(`This route's price is ${Math.round(worse * 100)}% worse than the market price, so Veul will not build it. Try a smaller amount.`);
+  }
 }

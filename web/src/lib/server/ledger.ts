@@ -110,8 +110,18 @@ async function ethPriceAt(blockNumber: bigint): Promise<number> {
   }
 }
 
-/** Which fee step the router call contains, if any. */
-function feeStep(input: Hex, fee: Address): "buy" | "sell" | null {
+// Only the Universal Router commands Veul's own swaps use (lib/swap/encode.ts): v3 swap, sweep, transfer, pay portion,
+// Permit2 permit, wrap, unwrap, v4 swap. Anything else (sub-plans above all) is not a Veul swap.
+const ALLOWED_COMMANDS = new Set([0x00, 0x04, 0x05, 0x06, 0x0a, 0x0b, 0x0c, 0x10]);
+const ALLOW_REVERT = 0x80;
+
+/**
+ * The fee step of a router call, held to the exact shape Veul builds (2026-11-26 swap review, finding A).
+ * No command may be allowed to revert, and only Veul's commands may appear, so a successful transaction proves every
+ * step ran, the fee step included. Exactly one fee step: a buy TRANSFERs exactly 0.5% of the ETH sent; a sell takes
+ * PAY_PORTION 50 bips of the ETH out. Anything else returns null (no payback).
+ */
+function feeStep(input: Hex, fee: Address, ethSent: bigint): "buy" | "sell" | null {
   let decoded;
   try {
     decoded = decodeFunctionData({ abi: executeAbi, data: input });
@@ -119,15 +129,23 @@ function feeStep(input: Hex, fee: Address): "buy" | "sell" | null {
     return null;
   }
   const [commands, inputs] = decoded.args;
-  const cmds = commands.slice(2).match(/../g)?.map((byte) => parseInt(byte, 16) & 0x3f) ?? [];
-  for (let i = 0; i < cmds.length; i++) {
-    if (cmds[i] !== CMD_TRANSFER && cmds[i] !== CMD_PAY_PORTION) continue;
+  const bytes = commands.slice(2).match(/../g)?.map((byte) => parseInt(byte, 16)) ?? [];
+  if (bytes.length === 0 || bytes.length !== inputs.length) return null;
+  let side: "buy" | "sell" | null = null;
+  for (let i = 0; i < bytes.length; i++) {
+    if (bytes[i] & ALLOW_REVERT) return null;
+    const cmd = bytes[i] & 0x3f;
+    if (!ALLOWED_COMMANDS.has(cmd)) return null;
+    if (cmd !== CMD_TRANSFER && cmd !== CMD_PAY_PORTION) continue;
     const [token, recipient, value] = decodeAbiParameters(threeArgs, inputs[i]);
-    if (!same(token, NATIVE) || !same(recipient, fee)) continue;
-    if (cmds[i] === CMD_TRANSFER) return "buy";
-    if (value === FEE_BIPS) return "sell";
+    if (!same(recipient, fee)) continue;
+    // A second fee step, a non-ETH fee, or a fee of the wrong size: not a Veul swap.
+    if (side !== null || !same(token, NATIVE)) return null;
+    if (cmd === CMD_TRANSFER && ethSent > 0n && value === (ethSent * FEE_BIPS) / 10_000n) side = "buy";
+    else if (cmd === CMD_PAY_PORTION && value === FEE_BIPS && ethSent === 0n) side = "sell";
+    else return null;
   }
-  return null;
+  return side;
 }
 
 /** Checks a transaction onchain and returns the ledger row it earns. Throws LedgerError when it does not qualify. */
@@ -141,9 +159,11 @@ export async function verifySwap(hash: Hex): Promise<LedgerEntry> {
   if (!tx) throw new LedgerError("Transaction not found yet.", true);
   if (!receipt) throw new LedgerError("Transaction is not confirmed yet.", true);
   if (receipt.status !== "success") throw new LedgerError("The transaction failed onchain, so no fee was paid.");
-  if (!tx.to || !same(tx.to, UNIVERSAL_ROUTER)) throw new LedgerError("Not a swap through the Stockup router call.");
+  if (!tx.to || !same(tx.to, UNIVERSAL_ROUTER)) throw new LedgerError("Not a swap through the Veul router call.");
+  // The fee wallet trading with itself would pay itself and still earn a payback (swap review, informational).
+  if (same(tx.from, fee)) throw new LedgerError("Swaps from the fee wallet earn no payback.");
 
-  const side = feeStep(tx.input, fee);
+  const side = feeStep(tx.input, fee, tx.value);
   if (!side) throw new LedgerError("This swap did not pay the Stockup fee.");
 
   // The fee actually received in this transaction (exact wei, from the transfer index).
@@ -316,37 +336,75 @@ const SCAN_KEY = "scan:fee-wallet:block";
  * Catches swaps the app never reported (tab closed, network drop): scans the fee wallet's incoming
  * internal ETH transfers since the last scan and records every one that verifies.
  */
+// Reconcile limits (2026-11-26 swap review, finding 1).
+const SCAN_WINDOW = 50_000n; // blocks per run (about 90 minutes at ~0.1 s a block)
+const SCAN_PAGES = 5; // 5,000 transfers at most per run
+const VERIFY_PER_RUN = 40; // each check costs several subrequests; stay under the Worker's limit
+const MAX_TRIES = 96; // about a day of 15-minute runs, then a stuck hash is dropped
+// A fee below this is dust, not a real trade (a 0.00002 ETH trade pays 1e11 wei); it is not checked.
+const MIN_FEE_WEI = 100_000_000_000n;
+
+/**
+ * Catches swaps the app never reported (tab closed, network drop): scans the fee wallet's incoming ETH in a bounded
+ * window, queues every transfer large enough to be a real fee, then checks a bounded number of queued hashes. The
+ * scan cursor always moves on to the last block it fully covered, whatever the checks do, so neither spam nor a
+ * pending swap can stall it; pending swaps stay queued and are retried by later runs.
+ */
 export async function reconcile() {
   const db = await ledgerDb();
   const fee = await feeWallet();
   const client = await rpc();
   const saved = await db.prepare("SELECT value FROM meta WHERE key = ?").bind(SCAN_KEY).first<{ value: string }>();
   const latest = await client.getBlockNumber();
-  const from = saved ? BigInt(saved.value) + 1n : 0n;
+  const from = saved ? BigInt(saved.value) + 1n : latest > SCAN_WINDOW ? latest - SCAN_WINDOW : 0n;
+  let to = from + SCAN_WINDOW < latest ? from + SCAN_WINDOW : latest;
 
-  const hashes = new Set<string>();
+  // 1. Scan. Transfers come back in block order; if the pages run out before the window does, the last block seen
+  //    may be partial, so the covered range ends just before it.
+  const found: { hash: string; block: bigint }[] = [];
   let pageKey: string | undefined;
-  for (let page = 0; page < 5; page++) {
-    const result = await internalTransfersTo(fee, from, latest, pageKey);
-    for (const transfer of result.transfers) hashes.add(transfer.hash.toLowerCase());
-    pageKey = result.pageKey;
-    if (!pageKey) break;
+  if (from <= to) {
+    for (let page = 0; page < SCAN_PAGES; page++) {
+      const result = await internalTransfersTo(fee, from, to, pageKey);
+      for (const transfer of result.transfers) {
+        if (BigInt(transfer.rawContract.value ?? "0x0") < MIN_FEE_WEI) continue;
+        found.push({ hash: transfer.hash.toLowerCase(), block: BigInt(transfer.blockNum) });
+      }
+      pageKey = result.pageKey;
+      if (!pageKey) break;
+      if (result.transfers.length) {
+        const lastBlock = BigInt(result.transfers[result.transfers.length - 1].blockNum);
+        if (page === SCAN_PAGES - 1) to = lastBlock > from ? lastBlock - 1n : from;
+      }
+    }
+  }
+  const now = Math.floor(Date.now() / 1000);
+  const covered = found.filter((item) => item.block <= to);
+  if (covered.length) {
+    await db.batch(
+      covered.map((item) =>
+        db.prepare("INSERT OR IGNORE INTO reconcile_queue (tx_hash, block_number, tries, added_at) VALUES (?, ?, 0, ?)").bind(item.hash, Number(item.block), now),
+      ),
+    );
+  }
+  if (from <= to) {
+    await db.prepare("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(SCAN_KEY, to.toString()).run();
   }
 
-  const outcome = { scannedFrom: Number(from), scannedTo: Number(latest), found: hashes.size, recorded: 0, skipped: [] as { hash: string; reason: string }[] };
-  let retryLater = false;
-  for (const hash of hashes) {
+  // 2. Check queued hashes, oldest first. Recorded or rejected: done. Pending: tried again next run, up to a day.
+  const queued = await db.prepare("SELECT tx_hash AS hash, tries FROM reconcile_queue ORDER BY block_number LIMIT ?").bind(VERIFY_PER_RUN).all<{ hash: string; tries: number }>();
+  const outcome = { scannedFrom: Number(from), scannedTo: Number(to), found: covered.length, checked: queued.results.length, recorded: 0, skipped: [] as { hash: string; reason: string }[] };
+  for (const { hash, tries } of queued.results) {
     try {
       const { created } = await recordSwap(hash as Hex);
       if (created) outcome.recorded++;
+      await db.prepare("DELETE FROM reconcile_queue WHERE tx_hash = ?").bind(hash).run();
     } catch (error) {
-      if (error instanceof LedgerError && error.pending) retryLater = true;
+      const pending = error instanceof LedgerError && error.pending;
+      if (pending && tries + 1 < MAX_TRIES) await db.prepare("UPDATE reconcile_queue SET tries = tries + 1 WHERE tx_hash = ?").bind(hash).run();
+      else await db.prepare("DELETE FROM reconcile_queue WHERE tx_hash = ?").bind(hash).run();
       outcome.skipped.push({ hash, reason: error instanceof Error ? error.message.slice(0, 120) : "error" });
     }
-  }
-  // Only move the cursor when nothing needs another look; a later run rescans the same range otherwise.
-  if (!retryLater && !pageKey) {
-    await db.prepare("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(SCAN_KEY, latest.toString()).run();
   }
   return outcome;
 }

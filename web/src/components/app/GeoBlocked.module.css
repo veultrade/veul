@@ -1,0 +1,43 @@
+/* The block page, in the app's calm look (its tokens are set here because it renders outside the app frame). */
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 24px;
+  background: #090909;
+  color: #fcfcfc;
+}
+
+.card {
+  display: grid;
+  gap: 14px;
+  max-width: 480px;
+  padding: 28px;
+  border: 1px solid #242424;
+  border-radius: 14px;
+  background: #131313;
+}
+
+.card h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.card p {
+  margin: 0;
+  color: #b1b1b1;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.link {
+  justify-self: start;
+  padding: 10px 18px;
+  border-radius: 99px;
+  background: #3aa0db;
+  color: #04121b;
+  font-weight: 500;
+  text-decoration: none;
+}

@@ -1,3 +1,4 @@
+import { geoBlocked } from "@/lib/server/geo";
 import { getAddress, parseUnits, type Address } from "viem";
 import { ADDRESS, fail, json, rateLimited } from "@/lib/server/http";
 import { buildClaim, buildUsdgClaim, claimQuote, claimStatus } from "@/lib/server/claims";
@@ -38,6 +39,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const limited = await rateLimited(request);
   if (limited) return limited;
+  // Not offered in blocked regions (lib/server/geo.ts).
+  const blocked = await geoBlocked(request);
+  if (blocked) return blocked;
   let body: { account?: string; ticker?: string; slippageBps?: number };
   try {
     body = await request.json();

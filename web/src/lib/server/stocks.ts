@@ -70,3 +70,12 @@ export async function stockTokens(): Promise<MarketToken[]> {
     })
     .sort((a, b) => b.volume24h - a.volume24h || b.liquidity - a.liquidity);
 }
+
+/**
+ * The pool Veul uses for an allowlisted stock token, or null for any other token. Stocks always trade through this
+ * pinned pool, never one picked by a data provider or sent by the app, so nobody can steer a stock buy into a pool
+ * they control (2026-11-26 swap review, finding 3).
+ */
+export function pinnedStockPool(address: string): MarketPool | null {
+  return LISTED.find((listed) => listed.address.toLowerCase() === address.toLowerCase())?.pool ?? null;
+}

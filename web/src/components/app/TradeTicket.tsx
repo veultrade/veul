@@ -150,7 +150,7 @@ export function TradeTicket({ token: listed, onClose }: { token: MarketToken; on
     setStatus("sending");
     try {
       const wallet = await auth.walletClient();
-      const result = await realSwap({ wallet, account: auth.address as `0x${string}`, token, side, amount, slippageBps, onStep: setStep });
+      const result = await realSwap({ wallet, account: auth.address as `0x${string}`, token, side, amount, slippageBps, expectedOut: quote.amountOut, onStep: setStep });
       // The ledger checks the swap onchain and books the payback; until then this is the expected amount.
       bag.trackReal(result.hash);
       setLastPayback(paybackUnits(result.usd, stockPrice));
@@ -301,6 +301,14 @@ export function TradeTicket({ token: listed, onClose }: { token: MarketToken; on
             <Tween value={tradeUsd * FEE_RATE} format={(v) => `$${formatFixed(v, 2)}`} />
           </dd>
         </div>
+        {realOn && quote && (
+          <div>
+            <dt>At least</dt>
+            <dd>
+              {formatAmount(received * (1 - slippageBps / 10_000))} {buying ? token.symbol : "ETH"}
+            </dd>
+          </div>
+        )}
         {realOn && (
           <div>
             <dt>Max slippage</dt>

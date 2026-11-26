@@ -3,6 +3,7 @@ import type { MarketToken } from "@/lib/market";
 import { NATIVE, USDG, WETH } from "@/lib/uniswap";
 import { decimalsOf } from "./dexscreener";
 import { lookupToken } from "./lookup";
+import { pinnedStockPool } from "./stocks";
 
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 const POOL_ID = /^0x([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$/;
@@ -17,6 +18,12 @@ export type TokenRef = { token: string; pool?: string; version?: string; quote?:
 export async function resolveToken(ref: TokenRef): Promise<MarketToken | null> {
   const address = String(ref.token ?? "").toLowerCase();
   if (!ADDRESS.test(address)) throw new Error("Not a contract address");
+  // Stocks always use their pinned pool, whatever the app sent.
+  const pinned = pinnedStockPool(address);
+  if (pinned) {
+    const token = await lookupToken(address);
+    return token ? { ...token, kind: "stock", pool: pinned } : null;
+  }
   const poolId = String(ref.pool ?? "").toLowerCase();
   const quoteAddress = String(ref.quote ?? "").toLowerCase();
   const version = ref.version;

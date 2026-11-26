@@ -19,6 +19,8 @@ interface CloudflareEnv {
   /** Per-trade cap in ETH for real swaps (default 0.01). */
   MAX_REAL_SWAP_ETH?: string;
   ALCHEMY_RPC_URL?: string;
+  /** Optional second Alchemy key for the public wallet proxy (/api/rpc), so abuse there cannot use up ALCHEMY_RPC_URL. */
+  ALCHEMY_PROXY_URL?: string;
   PRIVY_APP_SECRET?: string;
   /** Optional CoinGecko key for GeckoTerminal data; without it the public, IP-limited API is used. */
   COINGECKO_API_KEY?: string;

@@ -1,4 +1,6 @@
-import type { Hex, WalletClient } from "viem";
+import { decodeFunctionData, erc20Abi, parseUnits, type Hex, type WalletClient } from "viem";
+import { robinhoodChain } from "@/lib/chain";
+import { PERMIT2, UNIVERSAL_ROUTER } from "@/lib/swap/encode";
 import { getJson, type MarketToken } from "@/lib/market";
 
 /**
@@ -17,6 +19,17 @@ type Prepared = {
     primaryType: "PermitSingle";
   };
 };
+
+const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+
+/**
+ * The wallet only signs what this trade should be, whatever the server returns (2026-11-26 swap review, finding 5):
+ * the approval goes to Permit2, the permit lets only the Universal Router spend exactly this amount of this token on
+ * this chain, and the swap goes to the router with the right ETH. A tampered response stops here, before any signature.
+ */
+function refuse(why: string): never {
+  throw new Error(`Veul stopped before signing: ${why}. Nothing was sent.`);
+}
 
 async function post<T>(body: unknown): Promise<T> {
   return getJson<T>("/api/swap", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -38,19 +51,25 @@ export async function realSwap(args: {
   side: "buy" | "sell";
   amount: string;
   slippageBps: number;
+  /** The output the trader was shown; the server refuses to build if the price got worse than that by more than the slippage. */
+  expectedOut?: string;
   onStep: (step: SwapStep) => void;
 }): Promise<{ hash: Hex; minOut: string; usd: number; amountOut: string }> {
-  const { wallet, account, token, side, amount, slippageBps, onStep } = args;
+  const { wallet, account, token, side, amount, slippageBps, onStep, expectedOut } = args;
   const pool = token.pool;
   if (!pool) throw new Error("This token has no route");
   const ref = { token: token.address, pool: pool.id, version: pool.version, quote: pool.quoteAddress, createdAt: pool.createdAt ?? undefined, symbol: token.symbol };
-  const base = { ...ref, side, amount, slippageBps, account };
+  const base = { ...ref, side, amount, slippageBps, account, expectedOut };
   let permitPart = {};
 
   if (side === "sell") {
     onStep("preparing");
     const prepared = await post<Prepared>({ ...base, step: "prepare" });
+    const sellAmount = parseUnits(amount, token.decimals);
     if (prepared.approveTx) {
+      if (!same(prepared.approveTx.to, token.address)) refuse("the approval is for another token");
+      const approve = decodeFunctionData({ abi: erc20Abi, data: prepared.approveTx.data });
+      if (approve.functionName !== "approve" || !same(String(approve.args?.[0]), PERMIT2)) refuse("the approval is not for Permit2");
       onStep("approving");
       const approveHash = await wallet.sendTransaction({
         account,
@@ -61,6 +80,10 @@ export async function realSwap(args: {
       });
       if ((await waitFor(approveHash)) !== "success") throw new Error("The approval failed onchain.");
     }
+    const { permit, typedData } = prepared;
+    if (!same(permit.spender, UNIVERSAL_ROUTER)) refuse("the permit is not for the Uniswap router");
+    if (!same(permit.details.token, token.address) || BigInt(permit.details.amount) !== sellAmount) refuse("the permit does not match this sale");
+    if (!same(typedData.domain.verifyingContract, PERMIT2) || Number(typedData.domain.chainId) !== robinhoodChain.id) refuse("the permit is not for Permit2 on Robinhood Chain");
     onStep("signing-permit");
     const message = {
       details: { ...prepared.permit.details, amount: BigInt(prepared.permit.details.amount) },
@@ -79,6 +102,9 @@ export async function realSwap(args: {
 
   onStep("building");
   const built = await post<BuiltTx>({ ...base, ...permitPart, step: "build" });
+  const expectedValue = side === "buy" ? parseUnits(amount, 18) : 0n;
+  if (!same(built.tx.to, UNIVERSAL_ROUTER)) refuse("the swap is not addressed to the Uniswap router");
+  if (BigInt(built.tx.value) !== expectedValue) refuse("the swap sends a different amount of ETH");
   onStep("confirm-in-wallet");
   const hash = await wallet.sendTransaction({
     account,

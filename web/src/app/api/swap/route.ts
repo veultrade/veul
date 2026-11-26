@@ -1,3 +1,4 @@
+import { geoBlocked } from "@/lib/server/geo";
 import { getAddress, type Address, type Hex } from "viem";
 import { ADDRESS, fail, json, rateLimited } from "@/lib/server/http";
 import { resolveToken, type TokenRef } from "@/lib/server/resolve-token";
@@ -11,6 +12,9 @@ const AMOUNT = /^\d{1,12}(\.\d{1,18})?$/;
 export async function GET(request: Request) {
   const limited = await rateLimited(request);
   if (limited) return limited;
+  // Not offered in blocked regions (lib/server/geo.ts).
+  const blocked = await geoBlocked(request);
+  if (blocked) return blocked;
   const account = new URL(request.url).searchParams.get("account");
   const config = await swapConfig(account && ADDRESS.test(account) ? account : null);
   return json({ enabled: config.enabled, reason: config.reason, maxEth: config.maxEth });
@@ -24,6 +28,8 @@ type Body = TokenRef & {
   account?: string;
   permit?: { details: { token: string; amount: string; expiration: number; nonce: number }; spender: string; sigDeadline: string };
   signature?: string;
+  /** The output the trader was shown (decimal string). */
+  expectedOut?: string;
 };
 
 /**
@@ -34,6 +40,9 @@ type Body = TokenRef & {
 export async function POST(request: Request) {
   const limited = await rateLimited(request);
   if (limited) return limited;
+  // Not offered in blocked regions (lib/server/geo.ts).
+  const blocked = await geoBlocked(request);
+  if (blocked) return blocked;
   let body: Body;
   try {
     body = (await request.json()) as Body;
@@ -70,6 +79,7 @@ export async function POST(request: Request) {
       slippageBps,
       account: getAddress(account) as Address,
       feeWallet: config.feeWallet,
+      expectedOut: typeof body.expectedOut === "string" && /^\d{1,30}(\.\d{1,18})?$/.test(body.expectedOut) ? body.expectedOut : undefined,
       permit:
         side === "sell" && body.permit && body.signature
           ? {
