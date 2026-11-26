@@ -1,11 +1,10 @@
 import "server-only";
 import { decodeAbiParameters, decodeFunctionData, erc20Abi, formatUnits, getAddress, parseAbi, type Address, type Hex } from "viem";
-import { NATIVE, UNIVERSAL_ROUTER, USDG, WETH } from "@/lib/swap/encode";
-import { UNISWAP, USDG_DECIMALS, WETH_USDG_V3, quoterV2Abi } from "@/lib/uniswap";
+import { NATIVE, UNIVERSAL_ROUTER, WETH } from "@/lib/swap/encode";
+import { USDG_DECIMALS, WETH_USDG_V3 } from "@/lib/uniswap";
 import { PAYBACK_RATE } from "@/lib/tokens";
 import type { LedgerEntry } from "@/lib/ledger";
 import { rpc, serverEnv } from "./env";
-import { ethPriceUsd } from "./quote";
 
 /**
  * Ledger (session 1.5): a swap counts only after the server has checked it onchain.
@@ -19,6 +18,9 @@ import { ethPriceUsd } from "./quote";
  */
 
 /** Raised when the transaction is not (yet) something we can record; `pending` means "try again shortly". */
+/** Most one trade can pay back (USDG base units): 25 USDG, the payback on a $10,000 trade (2026-11-26 review). */
+const MAX_PAYBACK_USDG = 25_000_000;
+
 export class LedgerError extends Error {
   constructor(
     message: string,
@@ -80,20 +82,31 @@ async function internalTransfersTo(to: Address, fromBlock: bigint, toBlock: bigi
   return body.result;
 }
 
-/** ETH price in USD at a past block, from the same ETH/USDG pool the app quotes against. */
+const poolObserveAbi = parseAbi(["function observe(uint32[] secondsAgos) view returns (int56[] tickCumulatives, uint160[] secondsPerLiquidityCumulativeX128s)"]);
+const TWAP_SECONDS = 1800;
+
+/**
+ * ETH price in USD for a past swap: the 30-minute time-weighted average of the ETH/USDG pool, ending at the swap's
+ * block (2026-11-26 review: a spot price at one block can be pushed for the length of a block; an average over 30
+ * minutes cannot, cheaply). If the node cannot serve that block's state, the swap waits (pending) and is retried;
+ * there is no fallback to today's price, which the reporter could time.
+ */
 async function ethPriceAt(blockNumber: bigint): Promise<number> {
   try {
-    const { result } = await (await rpc()).simulateContract({
-      address: UNISWAP.v3QuoterV2,
-      abi: quoterV2Abi,
-      functionName: "quoteExactInputSingle",
-      args: [{ tokenIn: WETH, tokenOut: USDG, amountIn: 10n ** 18n, fee: WETH_USDG_V3.fee, sqrtPriceLimitX96: 0n }],
+    const [ticks] = await (await rpc()).readContract({
+      address: WETH_USDG_V3.pool,
+      abi: poolObserveAbi,
+      functionName: "observe",
+      args: [[TWAP_SECONDS, 0]],
       blockNumber,
     });
-    return Number(formatUnits(result[0], USDG_DECIMALS));
+    const averageTick = Number(ticks[1] - ticks[0]) / TWAP_SECONDS;
+    // token0 is WETH (18 decimals), token1 is USDG (6): USDG per WETH = 1.0001^tick * 10^(18 - 6).
+    const price = Math.pow(1.0001, averageTick) * 1e12;
+    if (!Number.isFinite(price) || price <= 0) throw new Error("bad price");
+    return price;
   } catch {
-    // Old state can be unavailable on the node; the price a few minutes later is close enough for a fallback.
-    return ethPriceUsd();
+    throw new LedgerError("The ETH price for this swap's block is not available yet; it will be retried.", true);
   }
 }
 
@@ -176,7 +189,8 @@ export async function verifySwap(hash: Hex): Promise<LedgerEntry> {
     ethUsd,
     usd,
     // USDG has 6 decimals; round down so we never owe more than 0.25%.
-    paybackUsdg: Math.floor(usd * PAYBACK_RATE * 10 ** USDG_DECIMALS),
+    // USDG has 6 decimals; round down so we never owe more than 0.25%, and never more than the per-trade cap.
+    paybackUsdg: Math.min(Math.floor(usd * PAYBACK_RATE * 10 ** USDG_DECIMALS), MAX_PAYBACK_USDG),
     paybackStatus: "owed",
     blockNumber: Number(receipt.blockNumber),
     blockTime: Number(block.timestamp),

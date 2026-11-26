@@ -4,7 +4,7 @@ import { topRoutes } from "@/lib/server/dexscreener";
 import { newTokens, trendingTokens } from "@/lib/server/gecko";
 import { gmgnAvailable, gmgnLists } from "@/lib/server/gmgn";
 import { stockTokens } from "@/lib/server/stocks";
-import { fail, json } from "@/lib/server/http";
+import { fail, json, rateLimited } from "@/lib/server/http";
 import { ethPriceUsd } from "@/lib/server/quote";
 
 const FRESH_SECONDS = 60;
@@ -18,6 +18,8 @@ type Edge = { match(request: Request): Promise<Response | undefined>; put(reques
  * Stale copy: the last good answer for each list, used when a source refuses (rate limits on shared IPs).
  */
 export async function GET(request: Request) {
+  const limited = await rateLimited(request);
+  if (limited) return limited;
   const edge = (globalThis as { caches?: { default?: Edge } }).caches?.default;
   const freshKey = new Request(new URL("/api/market", request.url).toString());
   const staleKey = new Request(new URL("/api/market?stale=1", request.url).toString());

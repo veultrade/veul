@@ -5,13 +5,15 @@ import { erc20Abi } from "@/lib/uniswap";
 import { decimalsOf } from "@/lib/server/dexscreener";
 import { rpc } from "@/lib/server/env";
 import { trendingTokens } from "@/lib/server/gecko";
-import { ADDRESS, fail, json } from "@/lib/server/http";
+import { ADDRESS, fail, json, rateLimited } from "@/lib/server/http";
 
 /**
  * GET /api/balances?address=0x… — ETH, every allowlisted stock token, and trending memes when that list
  * is available. Everything is read onchain; the trending list is optional so balances never depend on it.
  */
 export async function GET(request: Request) {
+  const limited = await rateLimited(request);
+  if (limited) return limited;
   const address = new URL(request.url).searchParams.get("address") ?? "";
   if (!ADDRESS.test(address)) return fail(new Error("Not a wallet address"), 400);
   try {

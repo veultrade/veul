@@ -1,7 +1,7 @@
 import type { TokenResponse, TokenSafety } from "@/lib/market";
 import { tokenSafety } from "@/lib/server/gecko";
 import { feedToken } from "@/lib/server/gmgn";
-import { ADDRESS, fail, json } from "@/lib/server/http";
+import { ADDRESS, fail, json, rateLimited } from "@/lib/server/http";
 import { lookupToken } from "@/lib/server/lookup";
 import { tokenOnchain } from "@/lib/server/onchain-lookup";
 
@@ -13,6 +13,8 @@ const UNKNOWN: TokenSafety = { holders: null, top10Pct: null, devPct: null, hone
  * else GeckoTerminal (which often refuses Cloudflare; then the fields stay unknown).
  */
 export async function GET(request: Request, { params }: { params: Promise<{ address: string }> }) {
+  const limited = await rateLimited(request);
+  if (limited) return limited;
   const { address } = await params;
   if (!ADDRESS.test(address)) return fail(new Error("Not a contract address"), 400);
   try {

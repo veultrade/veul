@@ -1,4 +1,4 @@
-import { fail, json } from "@/lib/server/http";
+import { fail, json, rateLimited } from "@/lib/server/http";
 import { quote } from "@/lib/server/quote";
 import { resolveToken } from "@/lib/server/resolve-token";
 
@@ -10,6 +10,8 @@ const AMOUNT = /^\d{1,12}(\.\d{1,18})?$/;
  * no data-API call. Without those, the token is looked up.
  */
 export async function GET(request: Request) {
+  const limited = await rateLimited(request);
+  if (limited) return limited;
   const params = new URL(request.url).searchParams;
   const side = params.get("side");
   const amount = params.get("amount") ?? "";

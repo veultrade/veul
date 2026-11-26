@@ -17,7 +17,8 @@ type AvatarToken = Pick<MarketToken, "symbol" | "kind"> & { imageUrl?: string | 
 export function TokenAvatar({ token, size = 28 }: { token: AvatarToken | "ETH"; size?: number }) {
   const symbol = token === "ETH" ? "ETH" : token.symbol;
   const stockLogo = token !== "ETH" && token.kind === "stock" && STOCK_LOGOS.has(symbol);
-  const imageUrl = token === "ETH" ? null : stockLogo ? `/stocks/${symbol}.png` : token.imageUrl;
+  // ETH has its own logo (web/public/tokens, from Wikimedia Commons).
+  const imageUrl = token === "ETH" ? "/tokens/eth.png" : stockLogo ? `/stocks/${symbol}.png` : token.imageUrl;
   const [failed, setFailed] = useState<string | null>(null);
   if (imageUrl && failed !== imageUrl) {
     // Remote logos from DexScreener/CoinGecko; plain img because Workers has no image optimizer here.

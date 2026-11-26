@@ -1,5 +1,5 @@
 import { serverEnv } from "@/lib/server/env";
-import { fail } from "@/lib/server/http";
+import { fail, rateLimited } from "@/lib/server/http";
 
 /**
  * POST /api/rpc — JSON-RPC for the trader's wallet (Privy), forwarded to our Alchemy node.
@@ -27,6 +27,8 @@ const ALLOWED = new Set([
 type RpcRequest = { jsonrpc?: string; id?: unknown; method?: string; params?: unknown };
 
 export async function POST(request: Request) {
+  const limited = await rateLimited(request, "RPC_LIMIT");
+  if (limited) return limited;
   const { ALCHEMY_RPC_URL } = await serverEnv();
   if (!ALCHEMY_RPC_URL) return fail(new Error("RPC is not configured"), 503);
   const text = await request.text();

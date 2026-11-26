@@ -18,6 +18,8 @@ type Status = {
   cumulativeUsdg: string;
   claimedUsdg: string;
   claimableUsdg: string;
+  /** All that is owed; above claimableUsdg when the contract's daily payout limit is short. */
+  owedUsdg?: string;
   minUsdg: string;
   estimateOut: string | null;
 };
@@ -29,7 +31,7 @@ const STEP_TEXT: Partial<Record<SwapStep, string>> = {
 };
 
 /**
- * The bag's claim control (session 1.6). Shows what the wallet can claim this week and, when open, claims it as the
+ * The bag's claim control. Shows what the wallet can claim now and, when open, claims it as the
  * chosen stock in one transaction the wallet signs. Closed states say why (not live yet, nothing yet, below minimum).
  */
 export function ClaimPanel() {
@@ -96,6 +98,8 @@ export function ClaimPanel() {
         </a>
       </>
     );
+  else if (status?.owedUsdg && Number(status.claimableUsdg) > 0 && Number(status.owedUsdg) > Number(status.claimableUsdg))
+    note = `This claim pays ${status.claimableUsdg} of the ${status.owedUsdg} USDG you are owed; the rest opens as today's payout limit refills.`;
   else if (status?.open && estimate > 0) note = `About ${formatAmount(estimate)} ${bag.ticker} at today's price, in one transaction you sign.`;
   else if (status?.reason) note = status.reason;
 

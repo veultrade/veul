@@ -1,6 +1,7 @@
 // Stockup market feed: runs on the VPS every 15 minutes (cron), fetches GMGN's Robinhood Chain lists from this
 // fixed IP and pushes them to the Stockup Worker, because GMGN bans Cloudflare's shared IPs.
-// No dependencies (Node 22). Settings in .env next to this file: GMGN_API_KEY, FEED_TOKEN, FEED_URL.
+// No dependencies (Node 22). Settings in .env next to this file: GMGN_API_KEY, FEED_TOKEN, FEED_URL, and one token
+// per other endpoint: RECONCILE_TOKEN, CLAIMS_TOKEN (2026-11-26 review).
 // Request shapes must match web/src/lib/server/gmgn.ts (RANK_QUERY, TRENCHES_BODY).
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -92,9 +93,10 @@ try {
 // Ledger catch-up (session 1.5): records real swaps that paid the fee but were never reported by the app.
 // Independent of the feed above, so a GMGN failure does not stop it.
 try {
+  if (!env.RECONCILE_TOKEN) throw new Error("RECONCILE_TOKEN missing in .env");
   const response = await fetch(new URL("/api/internal/reconcile", env.FEED_URL), {
     method: "POST",
-    headers: { Authorization: `Bearer ${env.FEED_TOKEN}` },
+    headers: { Authorization: `Bearer ${env.RECONCILE_TOKEN}` },
   });
   const result = await response.text();
   if (!response.ok) throw new Error(`reconcile ${response.status} ${result.slice(0, 200)}`);
@@ -104,15 +106,16 @@ try {
   process.exitCode = 1;
 }
 
-// Daily claims root (VeulClaimsV2): asked in the first quarter hour of 00:00–03:00 UTC, so a failed run is retried
+// Daily claims root (VeulClaimsV3): asked in the first quarter hour of 00:00, 01:00, 02:00 and 03:00 UTC, so a failed run is retried
 // within the night. Safe to repeat: the Worker posts only when the total grew, and the contract allows the poster
 // one root per interval (20 h), so the later calls answer "too-soon" or "nothing-new".
 const now = new Date();
-if (now.getUTCHours() <= 3 && now.getUTCMinutes() < 15) {
+if (now.getUTCHours() < 4 && now.getUTCMinutes() < 15) {
   try {
+    if (!env.CLAIMS_TOKEN) throw new Error("CLAIMS_TOKEN missing in .env");
     const response = await fetch(new URL("/api/internal/claims-epoch", env.FEED_URL), {
       method: "POST",
-      headers: { Authorization: `Bearer ${env.FEED_TOKEN}` },
+      headers: { Authorization: `Bearer ${env.CLAIMS_TOKEN}` },
     });
     const result = await response.text();
     if (!response.ok) throw new Error(`claims-epoch ${response.status} ${result.slice(0, 200)}`);

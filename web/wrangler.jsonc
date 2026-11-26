@@ -24,7 +24,13 @@
   "d1_databases": [{ "binding": "LEDGER", "database_name": "stockup-ledger", "database_id": "ac76767b-f09c-4d30-be4f-831b904eb6e8", "migrations_dir": "migrations" }],
   // Still on: the VPS market feed posts to the workers.dev address. Turn off once its FEED_URL is veul.trade.
   // Public settings (not secrets). VeulClaims was deployed by the fee wallet on 2026-11-25 (session 1.6).
-  "vars": { "CLAIMS_ADDRESS": "0x225a42c80e3dad180067e02461de7149ebad951f", "CLAIMS_V1_ADDRESS": "0xDc19CA2F0110D129CB9cC7CBc990A7f614A5e53A" },
+  "vars": { "CLAIMS_ADDRESS": "0xee03b98faf05014f699258cd651b2b7eddb54009", "CLAIMS_PREVIOUS": "0xDc19CA2F0110D129CB9cC7CBc990A7f614A5e53A,0x225a42c80e3dad180067e02461de7149ebad951f" },
+  // Per-IP limits on the public API (2026-11-26 review): /api/rpc forwards to our paid Alchemy key, and the other
+  // routes call the chain and data APIs. The ids only need to be unique within the account.
+  "ratelimits": [
+    { "name": "RPC_LIMIT", "namespace_id": "4663001", "simple": { "limit": 300, "period": 60 } },
+    { "name": "API_LIMIT", "namespace_id": "4663002", "simple": { "limit": 120, "period": 60 } }
+  ],
   "workers_dev": true,
   // No public URL per uploaded version.
   "preview_urls": false,

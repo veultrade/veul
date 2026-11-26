@@ -1,10 +1,10 @@
-// Writes contracts/deploy/deploy.html: a one-page tool that deploys VeulClaimsV2 (daily claims) from the owner's own browser
+// Writes contracts/deploy/deploy.html: a one-page tool that deploys VeulClaimsV3 (daily claims with a payout budget) from the owner's own browser
 // wallet (Rabby, MetaMask). Nobody but the person clicking holds a key; the page only asks the wallet to send the
 // deploy transaction. Rebuild after `forge build`:  node script/make-deploy-page.mjs
 // Then serve it locally (python -m http.server 8791 --directory deploy) and open http://localhost:8791/deploy.html.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-const artifact = JSON.parse(readFileSync(new URL("../out/VeulClaimsV2.sol/VeulClaimsV2.json", import.meta.url), "utf8"));
+const artifact = JSON.parse(readFileSync(new URL("../out/VeulClaimsV3.sol/VeulClaimsV3.json", import.meta.url), "utf8"));
 const bytecode = artifact.bytecode.object;
 
 const USDG = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
@@ -13,7 +13,7 @@ const DEFAULT_OWNER = "0xD38ffFABf5087489ae1486c7Aa9B6a993c819f37"; // the fee w
 
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deploy VeulClaimsV2</title>
+<title>Deploy VeulClaimsV3</title>
 <style>
   :root { color-scheme: dark; }
   body { margin: 0; background: #000; color: #f7f6f3; font: 15px/1.5 system-ui, sans-serif; }
@@ -28,12 +28,12 @@ const html = `<!doctype html>
   dl { display: grid; grid-template-columns: 90px 1fr; gap: 4px 12px; margin: 0; } dt { color: #9a9993; } dd { margin: 0; word-break: break-all; }
 </style></head>
 <body><main>
-  <h1>Deploy VeulClaimsV2</h1>
+  <h1>Deploy VeulClaimsV3</h1>
   <p>Robinhood Chain mainnet (4663). Your wallet signs one transaction that creates the daily claims contract. Nothing is sent but gas. Next: the setup page (setup.html).</p>
   <dl>
     <dt>USDG</dt><dd><code>${USDG}</code></dd>
     <dt>Router</dt><dd><code>${ROUTER}</code> (Uniswap Universal Router)</dd>
-    <dt>Bytecode</dt><dd>${(bytecode.length - 2) / 2} bytes, built from contracts/src/VeulClaimsV2.sol</dd>
+    <dt>Bytecode</dt><dd>${(bytecode.length - 2) / 2} bytes, built from contracts/src/VeulClaimsV3.sol</dd>
   </dl>
   <label>Owner (sets the poster and its limits, can post and pause; cannot take claimable USDG)
     <input id="owner" value="${DEFAULT_OWNER}">

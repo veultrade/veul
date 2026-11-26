@@ -1,4 +1,5 @@
 import "server-only";
+import { serverEnv } from "./env";
 
 /**
  * JSON responses with a short shared cache for price data, and readable errors without internals.
@@ -38,4 +39,16 @@ export function sameSecret(a: string, b: string) {
   let diff = x.length ^ y.length;
   for (let i = 0; i < Math.max(x.length, y.length); i++) diff |= (x[i] ?? 0) ^ (y[i] ?? 0);
   return diff === 0;
+}
+
+/**
+ * Per-IP rate limit for a public route (2026-11-26 review). Returns a 429 response when the caller is over the
+ * limit, otherwise null. Without the binding (local dev) nothing is limited.
+ */
+export async function rateLimited(request: Request, which: "RPC_LIMIT" | "API_LIMIT" = "API_LIMIT"): Promise<Response | null> {
+  const limiter = (await serverEnv())[which];
+  if (!limiter) return null;
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  const { success } = await limiter.limit({ key: ip });
+  return success ? null : json({ error: "Too many requests. Wait a minute and try again." }, 0, 429);
 }

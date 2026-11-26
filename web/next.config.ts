@@ -22,6 +22,18 @@ const nextConfig: NextConfig = {
           ]),
     ];
   },
+  // No page may be shown inside another site's frame (2026-11-26 review: clickjacking of wallet confirmations).
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+          { key: "X-Frame-Options", value: "DENY" },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return {
       // Before the filesystem, so the app host's "/" is the swap screen and not the landing. API routes, Next's own

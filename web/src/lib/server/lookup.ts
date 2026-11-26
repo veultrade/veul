@@ -17,6 +17,19 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
  * 3. onchain: metadata plus v3 pools and hookless v4 pools found from the chain alone.
  */
 export async function lookupToken(address: string): Promise<MarketToken | null> {
+  const token = await lookupFromSources(address);
+  // Logos Veul serves itself, by address (never by symbol, which anyone can copy).
+  const own = OWN_LOGOS[address.toLowerCase()];
+  return token && own ? { ...token, imageUrl: own } : token;
+}
+
+// USDG and WETH logos from CoinGecko, kept in web/public/tokens (2026-11-26).
+const OWN_LOGOS: Record<string, string> = {
+  "0x5fc5360d0400a0fd4f2af552add042d716f1d168": "/tokens/usdg.png",
+  "0x0bd7d308f8e1639fab988df18a8011f41eacad73": "/tokens/weth.png",
+};
+
+async function lookupFromSources(address: string): Promise<MarketToken | null> {
   const fromApi = await withTimeout(tokenByAddress(address), DEXSCREENER_TIMEOUT_MS).catch(() => null);
   if (fromApi?.pool) return fromApi;
   const [fromChain, fromFeed] = await Promise.all([tokenOnchain(address).catch(() => null), feedToken(address).catch(() => null)]);

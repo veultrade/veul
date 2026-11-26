@@ -6,8 +6,12 @@ interface CloudflareEnv {
   MARKET_FEED?: KVNamespace;
   /** Verified real swaps and paybacks (D1 "stockup-ledger", schema in migrations/). */
   LEDGER?: D1Database;
-  /** Shared token the VPS fetcher sends to POST /api/internal/market-feed and /api/internal/reconcile. */
+  /** Token the VPS fetcher sends to POST /api/internal/market-feed. One token per internal endpoint (2026-11-26 review). */
   FEED_TOKEN?: string;
+  /** Token for POST /api/internal/reconcile. */
+  RECONCILE_TOKEN?: string;
+  /** Token for POST /api/internal/claims-epoch. */
+  CLAIMS_TOKEN?: string;
   /** Wallet that receives the 0.5% fee. Real swaps stay off until it is set. */
   FEE_WALLET?: string;
   /** Comma-separated wallets allowed to make real swaps while testing. */
@@ -22,12 +26,19 @@ interface CloudflareEnv {
   COINGECKO_PLAN?: string;
   /** GMGN OpenAPI key for trending and new pools (market routes only, no private key needed). */
   GMGN_API_KEY?: string;
-  /** The live claims contract (VeulClaimsV2 since the daily switch), a plain var in wrangler.jsonc. Claims stay closed until it is set. */
+  /** The live claims contract (VeulClaimsV3), a plain var in wrangler.jsonc. Claims stay closed until it is set. */
   CLAIMS_ADDRESS?: string;
-  /** The first, weekly claims contract (VeulClaims, paused after the switch); its paid-out amounts are subtracted in v2. */
-  CLAIMS_V1_ADDRESS?: string;
-  /** Private key of the poster: it may only post roots on VeulClaimsV2, within the contract's limits. Secret. */
+  /** Earlier claims contracts, comma-separated (v1, v2). They must be paused; what they paid is subtracted. */
+  CLAIMS_PREVIOUS?: string;
+  /** Private key of the poster: it may only post roots on the claims contract, within its limits. Secret. */
   CLAIMS_POSTER_KEY?: string;
+  /** Per-IP rate limits (wrangler.jsonc "ratelimits"): /api/rpc, and the other public API routes. */
+  RPC_LIMIT?: RateLimit;
+  API_LIMIT?: RateLimit;
+}
+
+interface RateLimit {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
 }
 
 // The few D1 types the ledger uses (avoids adding @cloudflare/workers-types for one binding).

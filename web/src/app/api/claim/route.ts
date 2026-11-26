@@ -1,5 +1,5 @@
 import { getAddress, parseUnits, type Address } from "viem";
-import { ADDRESS, fail, json } from "@/lib/server/http";
+import { ADDRESS, fail, json, rateLimited } from "@/lib/server/http";
 import { buildClaim, buildUsdgClaim, claimQuote, claimStatus } from "@/lib/server/claims";
 import { PAYBACK_TICKERS } from "@/lib/tokens";
 
@@ -9,6 +9,8 @@ const TICKERS = PAYBACK_TICKERS as readonly string[];
  * GET /api/claim?account=0x…&ticker=NVDA — what the wallet can claim now, and roughly how much stock that buys.
  */
 export async function GET(request: Request) {
+  const limited = await rateLimited(request);
+  if (limited) return limited;
   const params = new URL(request.url).searchParams;
   const account = params.get("account") ?? "";
   const ticker = params.get("ticker") ?? "NVDA";
@@ -34,6 +36,8 @@ export async function GET(request: Request) {
  * The wallet signs and sends it; the server never holds keys.
  */
 export async function POST(request: Request) {
+  const limited = await rateLimited(request);
+  if (limited) return limited;
   let body: { account?: string; ticker?: string; slippageBps?: number };
   try {
     body = await request.json();

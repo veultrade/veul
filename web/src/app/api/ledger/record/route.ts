@@ -1,5 +1,5 @@
 import { LedgerError, recordSwap } from "@/lib/server/ledger";
-import { fail, json } from "@/lib/server/http";
+import { fail, json, rateLimited } from "@/lib/server/http";
 
 const HASH = /^0x[0-9a-fA-F]{64}$/;
 
@@ -9,6 +9,8 @@ const HASH = /^0x[0-9a-fA-F]{64}$/;
  * 200 recorded (or already recorded), 202 not ready yet (retry), 422 does not qualify.
  */
 export async function POST(request: Request) {
+  const limited = await rateLimited(request);
+  if (limited) return limited;
   let txHash: unknown;
   try {
     ({ txHash } = (await request.json()) as { txHash?: unknown });

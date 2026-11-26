@@ -22,7 +22,8 @@ const claimsAbi = parseAbi([
   "function epoch() view returns (uint256)",
   "function paused() view returns (bool)",
   "function claimed(address) view returns (uint256)",
-  "function claimAndSwap(uint256 cumulative, bytes32[] proof, bytes routerCalldata, address outToken, uint256 minOut) returns (uint256, uint256)",
+  "function payoutBudget() view returns (uint256)",
+  "function claimAndSwap(uint256 cumulative, bytes32[] proof, bytes routerCalldata, address outToken, uint256 minOut, uint256 maxAmount) returns (uint256, uint256)",
   "function claim(uint256 cumulative, bytes32[] proof) returns (uint256)",
 ]);
 
@@ -40,7 +41,10 @@ export type ClaimStatus = {
   epoch: number;
   cumulativeUsdg: string;
   claimedUsdg: string;
+  /** What the next claim pays: what is owed, up to the contract's payout budget right now. */
   claimableUsdg: string;
+  /** Everything owed to this wallet now; more than claimableUsdg when the budget is short. */
+  owedUsdg: string;
   minUsdg: string;
 };
 
@@ -63,24 +67,34 @@ async function leafFor(contract: Address, wallet: Address, root: Hex): Promise<{
 
 export async function claimStatus(wallet: Address): Promise<ClaimStatus & { proof: Hex[] }> {
   const contract = await claimsAddress();
-  const empty = { contract, epoch: 0, cumulativeUsdg: "0", claimedUsdg: "0", claimableUsdg: "0", minUsdg: formatUnits(MIN_CLAIM_USDG, USDG_DECIMALS), proof: [] };
+  const empty = { contract, epoch: 0, cumulativeUsdg: "0", claimedUsdg: "0", claimableUsdg: "0", owedUsdg: "0", minUsdg: formatUnits(MIN_CLAIM_USDG, USDG_DECIMALS), proof: [] };
   if (!contract) return { ...empty, open: false, usdgOpen: false, reason: "Claims open once the claims contract is live." };
 
   const client = await rpc();
   const read = <T>(functionName: "root" | "epoch" | "paused" | "claimed", args?: readonly [Address]) =>
     client.readContract({ address: contract, abi: claimsAbi, functionName, args } as never) as Promise<T>;
-  const [root, epoch, paused, claimed] = await Promise.all([read<Hex>("root"), read<bigint>("epoch"), read<boolean>("paused"), read<bigint>("claimed", [wallet])]);
+  const [root, epoch, paused, claimed, budget] = await Promise.all([
+    read<Hex>("root"),
+    read<bigint>("epoch"),
+    read<boolean>("paused"),
+    read<bigint>("claimed", [wallet]),
+    // v3's shared payout budget (claims.sol notes); older contracts have none, so no limit applies there.
+    client.readContract({ address: contract, abi: claimsAbi, functionName: "payoutBudget" }).catch(() => null),
+  ]);
 
   const leaf = epoch > 0n ? await leafFor(contract, wallet, root) : null;
   const cumulative = leaf?.cumulative ?? 0n;
-  const claimable = cumulative > claimed ? cumulative - claimed : 0n;
+  const owed = cumulative > claimed ? cumulative - claimed : 0n;
+  const claimable = budget === null || owed < budget ? owed : budget;
   const reason = paused
     ? "Claims are paused for a moment."
     : epoch === 0n
       ? "The first daily payout has not been posted yet."
-      : claimable === 0n
+      : owed === 0n
         ? "Nothing to claim yet. New paybacks are added once a day."
-        : claimable < MIN_CLAIM_USDG
+        : claimable === 0n
+          ? "Today's payout limit is used up. Claims open again as it refills over the day."
+          : claimable < MIN_CLAIM_USDG
           ? `Paying out as stock opens at ${formatUnits(MIN_CLAIM_USDG, USDG_DECIMALS)} USDG. Take it as USDG now, or let it add up.`
           : null;
 
@@ -93,6 +107,7 @@ export async function claimStatus(wallet: Address): Promise<ClaimStatus & { proo
     cumulativeUsdg: formatUnits(cumulative, USDG_DECIMALS),
     claimedUsdg: formatUnits(claimed, USDG_DECIMALS),
     claimableUsdg: formatUnits(claimable, USDG_DECIMALS),
+    owedUsdg: formatUnits(owed, USDG_DECIMALS),
     minUsdg: formatUnits(MIN_CLAIM_USDG, USDG_DECIMALS),
     proof: leaf?.proof ?? [],
   };
@@ -133,7 +148,8 @@ export async function buildClaim(wallet: Address, ticker: string, slippageBps: n
   const data = encodeFunctionData({
     abi: claimsAbi,
     functionName: "claimAndSwap",
-    args: [parseUnits(status.cumulativeUsdg, USDG_DECIMALS), status.proof, routerCalldata, stock.address, minOut],
+    // maxAmount = the amount minOut was quoted for, so a budget that refills before this lands cannot swap more.
+    args: [parseUnits(status.cumulativeUsdg, USDG_DECIMALS), status.proof, routerCalldata, stock.address, minOut, claimable],
   });
   const tx = { to: status.contract, data };
 

@@ -1,5 +1,5 @@
 import { getAddress, type Address, type Hex } from "viem";
-import { ADDRESS, fail, json } from "@/lib/server/http";
+import { ADDRESS, fail, json, rateLimited } from "@/lib/server/http";
 import { resolveToken, type TokenRef } from "@/lib/server/resolve-token";
 import { buildSwap, prepareSell, swapConfig } from "@/lib/server/swap";
 import { ethPriceUsd } from "@/lib/server/quote";
@@ -9,6 +9,8 @@ const AMOUNT = /^\d{1,12}(\.\d{1,18})?$/;
 
 /** GET /api/swap?account=0x… — may this wallet make real swaps, and the per-trade cap. */
 export async function GET(request: Request) {
+  const limited = await rateLimited(request);
+  if (limited) return limited;
   const account = new URL(request.url).searchParams.get("account");
   const config = await swapConfig(account && ADDRESS.test(account) ? account : null);
   return json({ enabled: config.enabled, reason: config.reason, maxEth: config.maxEth });
@@ -30,6 +32,8 @@ type Body = TokenRef & {
  * - step "build": the router transaction, simulated from the trader's wallet. The trader signs and sends it.
  */
 export async function POST(request: Request) {
+  const limited = await rateLimited(request);
+  if (limited) return limited;
   let body: Body;
   try {
     body = (await request.json()) as Body;

@@ -1,3 +1,9 @@
+// RETIRED (2026-11-26): this was the weekly v1 epoch script. It does not subtract what earlier contracts paid and
+// does not record the contract or ledger row, so using it for v2/v3 would pay some wallets twice and stall the daily
+// job. Roots are now built by web/src/lib/server/claims-epoch.ts (POST /api/internal/claims-epoch).
+console.error("scripts/claims-epoch.mjs is retired; use POST /api/internal/claims-epoch (see the file header).");
+process.exit(1);
+
 // Weekly claim epoch (session 1.6). Run every Monday:
 //   node scripts/claims-epoch.mjs            dry run: shows the new root, totals and what the owner must do
 //   node scripts/claims-epoch.mjs --write    also stores the epoch in D1 and writes the public JSON
