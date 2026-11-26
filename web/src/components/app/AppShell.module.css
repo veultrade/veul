@@ -210,6 +210,17 @@
   }
 }
 
+/* Small laptops: a narrower dock so the nav still fits beside it. */
+@media (max-width: 1280px) {
+  .frame {
+    --dock: 360px;
+  }
+
+  .nav {
+    gap: 18px;
+  }
+}
+
 /* Phones and small tablets: the dock becomes a bottom sheet (TradeDock.module.css), the column goes full width. */
 @media (max-width: 1000px) {
   .frame {
