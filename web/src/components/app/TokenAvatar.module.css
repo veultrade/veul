@@ -13,3 +13,10 @@ img.avatar {
   object-fit: cover;
   background: #1c1c1a;
 }
+
+/* Company logos are drawn for white backgrounds: a white tile with a little padding keeps them readable on dark. */
+img.stock {
+  box-sizing: border-box;
+  object-fit: contain;
+  background: #fff;
+}

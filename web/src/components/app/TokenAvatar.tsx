@@ -2,19 +2,27 @@
 
 import { useState } from "react";
 import type { MarketToken } from "@/lib/market";
+import stockLogos from "@/lib/stock-logos.json";
 import styles from "./TokenAvatar.module.css";
+
+// Company logos served by Veul (web/public/stocks, from scripts/fetch-stock-logos.mjs). The tokens' own image is the
+// same Robinhood feather for every stock, so these win for stocks wherever a stock is shown.
+const STOCK_LOGOS = new Set<string>(stockLogos);
+// White-on-transparent logos, which vanish on the white tile; they get a dark tile instead.
+const LIGHT_LOGOS = new Set(["QQQ"]);
 
 type AvatarToken = Pick<MarketToken, "symbol" | "kind"> & { imageUrl?: string | null };
 
-/** Token logo when the data source has one; otherwise a gradient from the symbol. ETH and stocks get fixed looks. */
+/** Token logo: our company logo for stocks, else the data source's, else a gradient from the symbol. */
 export function TokenAvatar({ token, size = 28 }: { token: AvatarToken | "ETH"; size?: number }) {
   const symbol = token === "ETH" ? "ETH" : token.symbol;
-  const imageUrl = token !== "ETH" ? token.imageUrl : null;
+  const stockLogo = token !== "ETH" && token.kind === "stock" && STOCK_LOGOS.has(symbol);
+  const imageUrl = token === "ETH" ? null : stockLogo ? `/stocks/${symbol}.png` : token.imageUrl;
   const [failed, setFailed] = useState<string | null>(null);
   if (imageUrl && failed !== imageUrl) {
     // Remote logos from DexScreener/CoinGecko; plain img because Workers has no image optimizer here.
     // eslint-disable-next-line @next/next/no-img-element
-    return <img className={styles.avatar} src={imageUrl} alt="" width={size} height={size} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(imageUrl)} />;
+    return <img className={`${styles.avatar} ${stockLogo ? styles.stock : ""}`} src={imageUrl} alt="" width={size} height={size} style={stockLogo ? { width: size, height: size, padding: Math.round(size * 0.14), background: LIGHT_LOGOS.has(symbol) ? "#1c1c1c" : undefined } : undefined} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(imageUrl)} />;
   }
   let background: string;
   if (token === "ETH") {

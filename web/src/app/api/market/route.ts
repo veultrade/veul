@@ -54,7 +54,10 @@ export async function GET(request: Request) {
     const all = [...(lists.trending ?? []), ...(lists.fresh ?? []), ...(lists.stocks ?? [])];
     const missing = all.filter((t) => !t.pool).map((t) => t.address);
     const routes = missing.length ? await topRoutes(missing) : new Map();
-    const fill = (list: MarketToken[] = []) => list.map((t) => (t.pool ? t : { ...t, pool: routes.get(t.address) ?? null }));
+    // The lists come from different sources; a logo one of them has (say Trending) also fills the token in another (New pools).
+    const logos = new Map(all.filter((t) => t.imageUrl).map((t) => [t.address, t.imageUrl]));
+    const fill = (list: MarketToken[] = []) =>
+      list.map((t) => ({ ...t, pool: t.pool ?? routes.get(t.address) ?? null, imageUrl: t.imageUrl ?? logos.get(t.address) ?? null }));
     const stockList = fill(lists.stocks);
     const body: MarketResponse = {
       updatedAt: new Date().toISOString(),
