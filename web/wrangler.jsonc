@@ -23,7 +23,7 @@
   // Ledger of verified real swaps and paybacks (session 1.5). Schema in migrations/.
   "d1_databases": [{ "binding": "LEDGER", "database_name": "stockup-ledger", "database_id": "ac76767b-f09c-4d30-be4f-831b904eb6e8", "migrations_dir": "migrations" }],
   // Public settings (not secrets). VeulClaims was deployed by the fee wallet on 2026-11-25 (session 1.6).
-  "vars": { "CLAIMS_ADDRESS": "0xee03b98faf05014f699258cd651b2b7eddb54009", "CLAIMS_PREVIOUS": "0xDc19CA2F0110D129CB9cC7CBc990A7f614A5e53A,0x225a42c80e3dad180067e02461de7149ebad951f" },
+  "vars": { "CLAIMS_ADDRESS": "0xee03b98faf05014f699258cd651b2b7eddb54009", "CLAIMS_PREVIOUS": "0xDc19CA2F0110D129CB9cC7CBc990A7f614A5e53A,0x225a42c80e3dad180067e02461de7149ebad951f", "GEO_BLOCK": "off" },
   // Per-IP limits on the public API (2026-11-26 review): /api/rpc forwards to our paid Alchemy key, and the other
   // routes call the chain and data APIs. The ids only need to be unique within the account.
   "ratelimits": [

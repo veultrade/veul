@@ -1,5 +1,6 @@
 import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { serverEnv } from "./env";
 import { json } from "./http";
 
 /**
@@ -18,6 +19,9 @@ export type GeoCheck = { blocked: boolean; country: string | null };
  * `testCountry`: development only (the x-veul-geo-test header), to see the block without a VPN; ignored in production.
  */
 export async function geoCheck(headerCountry?: string | null, testCountry?: string | null): Promise<GeoCheck> {
+  // The switch (wrangler.jsonc GEO_BLOCK): "off" during Preview, when only the team wallet can trade for real.
+  // It must be "on" before real swaps open to the public (launch plan L6).
+  if ((await serverEnv()).GEO_BLOCK === "off") return { blocked: false, country: null };
   if (process.env.NODE_ENV === "development" && testCountry) {
     const [country, region = null] = testCountry.toUpperCase().split("-");
     return { blocked: isBlocked(country, region), country };

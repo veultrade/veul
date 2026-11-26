@@ -32,6 +32,8 @@ interface CloudflareEnv {
   CLAIMS_ADDRESS?: string;
   /** Earlier claims contracts, comma-separated (v1, v2). They must be paused; what they paid is subtracted. */
   CLAIMS_PREVIOUS?: string;
+  /** "off" disables the geo-block (Preview only); anything else, or unset, keeps it on. */
+  GEO_BLOCK?: string;
   /** Private key of the poster: it may only post roots on the claims contract, within its limits. Secret. */
   CLAIMS_POSTER_KEY?: string;
   /** Per-IP rate limits (wrangler.jsonc "ratelimits"): /api/rpc, and the other public API routes. */
